@@ -1,0 +1,18 @@
+Package: FuzzyR
+Type: Package
+Title: Fuzzy Logic Toolkit for R
+Version: 2.0
+Date: 2016-09-27
+Author: Jon Garibaldi, Chao Chen, Tajul Razak
+Maintainer: Jon Garibaldi <fuzzyr@cs.nott.ac.uk>
+Depends: R (>= 3.0.0)
+Imports: splines, shiny, plyr
+Description: Design and simulate fuzzy logic systems using Type 1 Fuzzy Logic. This toolkit includes with graphical user interface (GUI) and an adaptive neuro-fuzzy inference system (ANFIS). This toolkit is a continuation from the previous package ('FuzzyToolkitUoN'). Produced by the Intelligent Modelling & Analysis Group, University of Nottingham.
+License: GPL (>= 2)
+LazyData: TRUE
+URL: http://ima.ac.uk
+RoxygenNote: 5.0.1
+NeedsCompilation: no
+Packaged: 2016-09-27 19:23:26 UTC; psxtrr
+Repository: CRAN
+Date/Publication: 2016-09-28 08:34:05
