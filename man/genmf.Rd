@@ -19,8 +19,22 @@ where x is a generic element of U, which is the universe of discourse for a fuzz
 To generate the corresponding membership function f(x), also called fuzzy set,
 according to type and parameters
 }
+\details{
+Built-in membership function types are: 'gbellmf', 'it2gbellmf', 'singletonmf', 'linearmf', 'gaussmf', 'trapmf', 'trimf'.
+\cr \cr mf.params for 
+\itemize{
+\item 'gbellmf' is c(\code{a, b, c}), where \code{a} denotes the width, \code{b} is usually positive and {c} locates the center of the curve.
+\cr \item 'it2gbellmf' is c(\code{a.lower, a.upper, b, c}), where \code{a.upper > a.lower} when \code{b > 0} and \code{a.upper < a.lower} when \code{b < 0}
+\cr \item 'singletonmf' is c(\code{c}), where \code{c} is the location where the membership grade is 1.
+\cr \item 'linearmf' is c(\code{...}), which are the coefficients of the linear membership function.
+\cr \item 'gaussmf' is c(\code{sig, c}), which are the parameters for exp(-(x - c)^2/(2 * sig^2)).
+\cr \item 'trapmf' is c(\code{a, b, c, d}), where \code{a} and \code{d} locate the "feet" of the trapezoid and \code{b} and \code{c} locate the "shoulders".
+\cr \item 'trimf' is c(\code{a, b, c}), where \code{a} and \code{c} locate the "feet" of the triangle and \code{b} locates the peak.
+}
+Note that users are able to define their own membership functions.
+}
 \examples{
-mf <- genmf(gbellmf, c(1,2,3))
+mf <- genmf('gbellmf', c(1,2,3))
 evalmf(1:10, mf)
 }
 \author{

@@ -18,6 +18,38 @@ fun.exists <- function(fun, where) {
     sum(sapply(unlist(where), function(x) identical(match.fun(x), match.fun(fun))))
 }
 
+
+#' @title fuzzyr.match.fun
+#' @description
+#' This is a modification of the original match.fun, where parent.frame(2) is changed to parent.env(environment()).
+#' @param FUN item to match as function: a function, symbol or character string.
+#' @param descend logical; control whether to search past non-function objects.
+#' @details See \code{\link{match.fun}}.
+#' @export
+fuzzyr.match.fun <- function(FUN, descend = TRUE) 
+{
+    if (is.function(FUN)) 
+        return(FUN)
+    if (!(is.character(FUN) && length(FUN) == 1L || is.symbol(FUN))) {
+        FUN <- eval.parent(substitute(substitute(FUN)))
+        if (!is.symbol(FUN)) 
+            stop(gettextf("'%s' is not a function, character or symbol", 
+                deparse(FUN)), domain = NA)
+    }
+    envir <- parent.env(environment())
+    if (descend) 
+        FUN <- get(as.character(FUN), mode = "function", envir = envir)
+    else {
+        FUN <- get(as.character(FUN), mode = "any", envir = envir)
+        if (!is.function(FUN)) 
+            stop(gettextf("found non-function '%s'", FUN), domain = NA)
+    }
+    return(FUN)
+}
+
+match.fun <- fuzzyr.match.fun
+
+
 ## Function: in.range
 ##  Description:
 ##      to check whether the value x is in a given range
@@ -51,32 +83,6 @@ multiply <- function(x, y) {
 
     x*y
 }
-
-## This function can be replaced by the function expand.grid().
-## e.g. expand.grid(c(list(1:3), list(1:2), list(1:3)))
-## @export
-genrule <- function(in_n, in_mf_n, pos=1) {
-
-	if(pos < in_n) {
-		sub_rule = genRule(in_n, in_mf_n, pos + 1)
-	} else if(pos == in_n) {
-		return(matrix(c(1:in_mf_n[pos]), ncol=1))
-	} else {
-		stop("error")
-	}
-
-	rule = NULL
-	for(i in 1:in_mf_n[pos]) {
-		tmp_rule = cbind(rep(i, nrow(sub_rule)), sub_rule)
-		if(length(rule) != 0) {
-			rule = rbind(rule, tmp_rule)
-		} else {
-			rule = tmp_rule
-		}
-	}
-	rule
-}
-
 
 
 ## Function: init.params.gbell
@@ -124,130 +130,93 @@ init.params.it2gbell <- function(x, n=2) {
 }
 
 
-## Function: ekm
-##  Description:
-##          to optimize with the EKM algorithm
-##      OR
-##          to obtain which wl and wr for optimizing the weigthed mean with the EKM algorithm
-##  Input:
-##      wl: the lower bound vector of the firing intervals (wl >= 0)
-##      wr: the upper bound vector of the firing intervals (wr >= 0)
-##      f: the lower/upper bound vector of the tsk outputs
-##      maximum: T for maximum, and F for minimum (default)
-##      w.which: if TRUE, then return the list of wl and wr which are used to achieve the optimum
-##  Output:
-##          y: the optimized output
-##      OR
-##          wl.which: a list of which wl to be used
-##          wr.which: a list of which wr to be used
-## @author Chao Chen
+## This function can be replaced by the function expand.grid().
+## e.g. expand.grid(c(list(1:3), list(1:2), list(1:3)))
+## @export
+genrule <- function(in_n, in_mf_n, pos=1) {
 
-ekm <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
+	if(pos < in_n) {
+		sub_rule = genRule(in_n, in_mf_n, pos + 1)
+	} else if(pos == in_n) {
+		return(matrix(c(1:in_mf_n[pos]), ncol=1))
+	} else {
+		stop("error")
+	}
 
-    if(sum(wl > wr)) {
-        stop("the lower bound should be no larger than upper bound")
-    } else if(sum(wl < 0) || sum(wr <= 0)) {
-        stop("the firing strength should not be negative number")
-    }
-
-    y <- NULL
-    wr.which <- rep(TRUE, length(wr))
-
-    #if(identical(wl, wr) && length(unique(wl)) == 1) {
-    if(identical(wl, wr)) {
-        #y <- mean(f)
-        y <- sum(wl * f) / sum(wl)
-    } else if(sum(wl) == 0) {
-        if(maximum) {
-            y <- max(f)
-            wr.which[-which.max(f)] = FALSE
-        } else {
-            y <- min(f)
-            wr.which[-which.min(f)] = FALSE
-        }
-    }
-
-    if(is.null(y)) {
-
-        idx.trim <- which(wr!=0)
-        wl <- wl[idx.trim]
-        wr <- wr[idx.trim]
-        f <- f[idx.trim]
-
-        if(length(unique(f)) == 1) {
-            y <- unique(f)
-        } else {
-            n <- length(f)
-
-            if(!sorted) {
-                idx.order <- order(f)
-                idx.trim <- idx.trim[idx.order]
-                f <- f[idx.order]
-                wl <- wl[idx.order]
-                wr <- wr[idx.order]
-            }
-
-            if(maximum) {
-                mflag <- 1
-                k <- round(n / 1.7)
-                w <- if(k < n) c(wl[1:k], wr[(k+1):n]) else wl[1:n]
-            } else {
-                mflag <- -1
-                k <- round(n / 2.4)
-                w <- if(k < n) c(wr[1:k], wl[(k+1):n]) else wr[1:n]
-            }
-
-            a <- w %*% f
-            b <- sum(w)
-            y <- as.numeric(a / b)
-            ## The following 'complicated' operation is because the precision of R is terrible!
-            ## In fact, y should be within [min(f), max(f)], but R does not give this fact!
-            #k.tmp <- if(sum(round(f,15) >= round(y,15)) != 0) which.max(round(f,15) >= round(y,15)) else n
-            k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
-            k.new <- if(k.tmp > 1) k.tmp - 1 else 1
-            #k.new <- length(which(f<y+2^-50))
-            #if(k.new == n) k.new <- n - 1
-            k.hist <- k
-
-            counter <- 1
-            while(k.new != k && !(k.new %in% k.hist)) {
-                counter <- counter + 1
-                s <- sign(k.new - k)
-
-                idx <- (min(k, k.new) + 1) : max(k, k.new)
-
-                a <- a - mflag * s * (f[idx] %*% (wr[idx] - wl[idx]))
-                b <- b - mflag * s * sum(wr[idx] - wl[idx])
-                y <- as.numeric(a / b)
-
-                k <- k.new
-                k.hist <- c(k.hist, k)
-                #k.tmp <- if(sum(round(f,15) >= round(y,15)) != 0) which.max(round(f,15) >= round(y,15)) else n
-                k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
-                k.new <- if(k.tmp > 1) k.tmp - 1 else 1
-                #k.new <- length(which(f<y+2^-50))
-                #if(k.new == n) k.new <- n - 1
-            }
-            #cat("counter:", counter, "\n")
-            #cat("k: ", k, "\n")
-
-            if(maximum) {
-                wr.which[idx.trim[1:k]] = FALSE
-            } else {
-                if(k < n) wr.which[idx.trim[(k+1):n]] = FALSE
-            }
-        }
-    }
-
-    wl.which <- !wr.which
-
-    if(w.which) {
-        cbind(wl.which, wr.which)
-    } else {
-        if(k.which) {
-            c(y, k) 
-        } else {
-            y
-        }
-    }
+	rule = NULL
+	for(i in 1:in_mf_n[pos]) {
+		tmp_rule = cbind(rep(i, nrow(sub_rule)), sub_rule)
+		if(length(rule) != 0) {
+			rule = rbind(rule, tmp_rule)
+		} else {
+			rule = tmp_rule
+		}
+	}
+	rule
 }
+
+
+rspe <- function(f, y, ref=0) {
+
+    sign <- ifelse(y >= 0,
+                    ifelse((f - y) >= 0, 1, -1),
+                    ifelse((f - y) <= 0, 1, -1)
+                    )
+
+	rspe <- sign * abs(f - y) / (abs(f - y) + abs(y - ref))
+	rspe[f==y] = 0
+	rspe[f==ref] = sign[f==ref] * 0.5
+
+	rspe
+}
+
+#' @title Fuzzy Accuracy
+#' @description
+#' This function is to provide performance indicators by using eight different accuracy measures including a new measure UMBRAE.
+#' @param f A vector of forecasting values produced by a model to be evaluated.
+#' @param y A vector of observed values.
+#' @param f.ref A vector of forecasting values produced by a benchmark method to be compared.
+#' @param scale.mase A single value which is the scaling factor of the measure MASE.
+#' @return A vector of results by each measure.
+#' @examples
+#' f <- rnorm(10)
+#' y <- rnorm(10)
+#' fuzzyr.accuracy(f, y)
+#' @author Chao Chen
+#' @references
+#' A new accuracy measure based on bounded relative error for time series forecasting \url{http://dx.doi.org/10.1371/journal.pone.0174202}
+#' @export
+
+fuzzyr.accuracy <- function(f, y, f.ref=0, scale.mase=NULL) {
+
+    e <- y - f
+
+    mae <- mean(abs(e), na.rm=TRUE)
+
+    mse <- mean(e^2, na.rm=TRUE)
+    rmse <- sqrt(mse)
+
+    mase <- NA
+    if(!is.null(scale.mase)) {
+        mase <- mean(abs(e/scale.mase), na.rm=TRUE)
+    }
+
+    e.ref <- y - f.ref
+    mrae <- mean(abs(e/e.ref), na.rm=TRUE)  
+    gmrae <- exp(mean(log(abs(e/e.ref)), na.rm=TRUE))
+
+    pe <- e / y * 100
+    mape <- mean(abs(pe), na.rm=TRUE)
+
+    spe <- e / (abs(y) + abs(f)) * 200
+    smape <- mean(abs(spe), na.rm=TRUE)
+
+    mbrae <- mean(abs(rspe(f, y, f.ref)))
+    umbrae <- mbrae/(1 - mbrae)
+
+    out <- c(mae, rmse, mase, mrae, gmrae, mape, smape, umbrae)
+    names(out) <- c("MAE","RMSE","MASE", "MRAE", "GMRAE", "MAPE","sMAPE","uMbRAE")
+
+    out
+}
+

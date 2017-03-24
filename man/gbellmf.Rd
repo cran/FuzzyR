@@ -22,7 +22,7 @@ This is not an external function. It should be used through \code{\link{genmf}}.
 \examples{
 mf <- gbellmf(c(1,2,3))
 # This is the same as:
-mf <- genmf(gbellmf, c(1,2,3))
+mf <- genmf('gbellmf', c(1,2,3))
 
 evalmf(5, mf)
 }

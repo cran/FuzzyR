@@ -23,6 +23,6 @@ anfis <- anfis.builder(fis)
 Chao Chen
 }
 \references{
-An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models \url{http://eprints.nottingham.ac.uk/33465/}
+An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models \url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
 }
 

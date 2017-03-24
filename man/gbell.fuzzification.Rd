@@ -20,7 +20,7 @@ To generate a fuzzy membership function based on Gaussian bell fuzzification for
 \examples{
 mf <- gbell.fuzzification(3, c(1,2))
 # This is the same as:
-mf <- genmf(gbellmf, c(1,2,3))
+mf <- genmf('gbellmf', c(1,2,3))
 
 evalmf(1:10, mf)
 }

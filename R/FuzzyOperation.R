@@ -169,11 +169,261 @@ fuzzy.firing <- function(operator, x.mf, ante.mf, lower, upper) {
 #' @export
 
 fuzzy.optimise <- function(fuzzy.mf, lower, upper) {
-
     if(lower == upper) {
         # This is for the firing of singleton fuzzification, where lower==upper should be x' to get f(x')
         fuzzy.mf(lower)
     } else {
         optimise(fuzzy.mf, c(lower, upper), maximum=T, tol=10^-6)$objective
+    }
+}
+
+
+## Function: ekm
+##  Description:
+##          to optimize with the EKM algorithm
+##      OR
+##          to obtain which wl and wr for optimizing the weigthed mean with the EKM algorithm
+##  Input:
+##      wl: the lower bound vector of the firing intervals (wl >= 0)
+##      wr: the upper bound vector of the firing intervals (wr >= 0)
+##      f: the lower/upper bound vector of the tsk outputs
+##      maximum: T for maximum, and F for minimum (default)
+##      w.which: if TRUE, then return the list of wl and wr which are used to achieve the optimum
+##  Output:
+##          y: the optimized output
+##      OR
+##          wl.which: a list of which wl to be used
+##          wr.which: a list of which wr to be used
+## @author Chao Chen
+
+ekm <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
+
+    if(sum(wl > wr)) {
+        stop("the lower bound should be no larger than upper bound")
+    } else if(sum(wl < 0) || sum(wr < 0)) {
+        stop("the firing strength should not be negative number")
+    }
+
+    y <- NULL
+    wr.which <- rep(TRUE, length(wr))
+    k <- NULL
+
+    #if(identical(wl, wr) && length(unique(wl)) == 1) {
+    if(identical(wl, wr)) {
+        #y <- mean(f)
+        y <- sum(wl * f) / sum(wl)
+    } else if(sum(wl) == 0) {
+        if(maximum) {
+            y <- max(f)
+            wr.which[-which.max(f)] = FALSE
+        } else {
+            y <- min(f)
+            wr.which[-which.min(f)] = FALSE
+        }
+    }
+
+    if(is.null(y)) {
+
+        idx.trim <- which(wr!=0)
+        wl <- wl[idx.trim]
+        wr <- wr[idx.trim]
+        f <- f[idx.trim]
+
+        if(length(unique(f)) == 1) {
+            y <- unique(f)
+        } else {
+            n <- length(f)
+
+            if(!sorted) {
+                idx.order <- order(f)
+                idx.trim <- idx.trim[idx.order]
+                f <- f[idx.order]
+                wl <- wl[idx.order]
+                wr <- wr[idx.order]
+            }
+
+            if(maximum) {
+                mflag <- 1
+                k <- round(n/1.7)
+                w <- if(k < n) c(wl[1:k], wr[(k+1):n]) else wl[1:n]
+            } else {
+                mflag <- -1
+                k <- round(n/2.4)
+                w <- if(k < n) c(wr[1:k], wl[(k+1):n]) else wr[1:n]
+            }
+
+            a <- w %*% f
+            b <- sum(w)
+            y <- as.numeric(a / b)
+            ## The following 'complicated' operation is because the precision of R is terrible!
+            ## This may lead to wrong results! We suggest an alternative function km.da.
+            ## In fact, y should be within [min(f), max(f)], but R does not give this fact!
+            #k.tmp <- if(sum(round(f,15) >= round(y,15)) != 0) which.max(round(f,15) >= round(y,15)) else n
+            k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
+            k.new <- if(k.tmp > 1) k.tmp - 1 else 1
+            k.hist <- k
+
+            counter <- 1
+            while(k.new != k && !(k.new %in% k.hist)) {
+                counter <- counter + 1
+                s <- sign(k.new - k)
+
+                idx <- (min(k, k.new) + 1) : max(k, k.new)
+
+                a <- a - mflag * s * (f[idx] %*% (wr[idx] - wl[idx]))
+                b <- b - mflag * s * sum(wr[idx] - wl[idx])
+                y <- as.numeric(a / b)
+
+                k <- k.new
+                k.hist <- c(k.hist, k)
+                #k.tmp <- if(sum(round(f,15) >= round(y,15)) != 0) which.max(round(f,15) >= round(y,15)) else n
+                k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
+                k.new <- if(k.tmp > 1) k.tmp - 1 else 1
+            }
+            #cat("counter:", counter, "\n")
+            #cat("k: ", k, "\n")
+
+            if(maximum) {
+                wr.which[idx.trim[1:k]] = FALSE
+            } else {
+                if(k < n) wr.which[idx.trim[(k+1):n]] = FALSE
+            }
+        }
+    }
+
+    wl.which <- !wr.which
+
+    if(w.which) {
+        cbind(wl.which, wr.which)
+    } else {
+        if(k.which) {
+            c(y, k) 
+        } else {
+            y
+        }
+    }
+}
+
+
+#' @title km.da
+#' @description
+#' A Direct Approach for Determining the Switch Points in the Karnik-Mendel Algorithm.
+#' @param wl A vector of lower membership grades.
+#' @param wr A vector of upper membership grades.
+#' @param f A vector of the primary values in the discrete universe of discourse X.
+#' @param maximum T, to calculate the maximum centroid; F, to calulate the minimum centroid.
+#' @param w.which T, to show which membership grade to be used to calculate maximum/minimum centroid for each primary value.
+#' @param sorted T, to indicate that the primary values have already been put in ascending order.
+#' @param k.which T, to show the index of the switch point selected by the algorithm.
+#' @return w.which=T, a two-column matrix indicating which membership grades to be used; 
+#' w.which=F and k.which=T, a vector of the centroid and the switch point; 
+#' w.which=F and k.which=F, a single value of the centroid.
+#' @examples
+#' wr <- runif(100, 0, 1)
+#' wl <- wr * runif(100, 0, 1)
+#' f <- abs(runif(100, 0, 1))
+#' f <- sort(f)
+#' km.da(wl, wr, f)
+#' @author Chao Chen
+#' @references
+#' A Direct Approach for Determining the Switch Points in the Karnik-Mendel Algorithm.
+#' @export
+
+km.da <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
+
+    if(sum(wl > wr)) {
+        stop("the lower bound should be no larger than upper bound")
+    } else if(sum(wl < 0) || sum(wr < 0)) {
+        stop("the firing strength should not be negative number")
+    }
+
+    y <- NULL
+    wr.which <- rep(TRUE, length(wr))
+    k <- NULL
+
+    #if(identical(wl, wr) && length(unique(wl)) == 1) {
+    if(identical(wl, wr)) {
+        #y <- mean(f)
+        y <- sum(wl * f) / sum(wl)
+    } else if(sum(wl) == 0) {
+        if(maximum) {
+            y <- max(f)
+            wr.which[-which.max(f)] = FALSE
+        } else {
+            y <- min(f)
+            wr.which[-which.min(f)] = FALSE
+        }
+    }
+
+    if(is.null(y)) {
+
+        idx.trim <- which(wr!=0)
+        wl <- wl[idx.trim]
+        wr <- wr[idx.trim]
+        f <- f[idx.trim]
+
+        if(length(unique(f)) == 1) {
+            y <- unique(f)
+        } else {
+            n <- length(f)
+
+            if(!sorted) {
+                idx.order <- order(f)
+                idx.trim <- idx.trim[idx.order]
+                f <- f[idx.order]
+                wl <- wl[idx.order]
+                wr <- wr[idx.order]
+            }
+
+            if(maximum) {
+                positive.w.cusum <- cumsum(wl[1:(n-1)])
+                negative.w.cusum <- cumsum(wr[n:2])
+            } else {
+                positive.w.cusum <- cumsum(wr[1:(n-1)])
+                negative.w.cusum <- cumsum(wl[n:2])
+            }
+
+            delta.f <- diff(f)
+            positive <- delta.f * positive.w.cusum
+            negative <- delta.f[(n-1):1] * negative.w.cusum
+
+            positive.cusum <- c(0, cumsum(positive))
+            negative.cusum <- c(cumsum(negative)[(n-1):1],0)
+
+            derivatives <- positive.cusum - negative.cusum
+            #k <- which.max(derivatives>=0)-1
+            #k <- sum(derivatives<0)
+            k <- length(which(derivatives<0))
+
+            if(maximum) {
+                w <- c(wl[1:k], wr[(k+1):n])
+            } else {
+                w <- c(wr[1:k], wl[(k+1):n])
+            }
+
+            a <- w %*% f
+            b <- sum(w)
+            y <- as.numeric(a / b)
+
+            #cat("k: ", k, "\n")
+
+            if(maximum) {
+                wr.which[idx.trim[1:k]] = FALSE
+            } else {
+                if(k < n) wr.which[idx.trim[(k+1):n]] = FALSE
+            }
+        }
+    }
+
+    wl.which <- !wr.which
+
+    if(w.which) {
+        cbind(wl.which, wr.which)
+    } else {
+        if(k.which) {
+            c(y, k) 
+        } else {
+            y
+        }
     }
 }

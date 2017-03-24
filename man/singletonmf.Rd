@@ -22,7 +22,7 @@ This is not an external function. It should be used through \code{\link{genmf}}.
 \examples{
 mf <- singletonmf(3)
 # This is the same as:
-mf <- genmf(singletonmf, 3)
+mf <- genmf('singletonmf', 3)
 
 evalmf(1:10, mf)
 }

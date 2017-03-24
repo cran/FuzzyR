@@ -22,7 +22,7 @@ globalVariables(c("D_x","D_y","D_out","genRule","perturb","NumInputs","Range","N
 newfis <- function(fisName,fisType="mamdani",
   andMethod="min", orMethod="max", impMethod="min", aggMethod="max",
   defuzzMethod="centroid") {
-  fis <- list(name=fisName, type=fisType,
+    fis <- list(name=fisName, type=fisType,
     andMethod=andMethod, orMethod=orMethod,
     impMethod=impMethod, aggMethod=aggMethod,
     defuzzMethod=defuzzMethod,
@@ -179,7 +179,6 @@ showrule <- function(fis) {
 #' gensurf(fis)
 #' @export
 gensurf <- function(fis, ix1=1, ix2=2, ox1=1) {
-
   i1= fis$input[[ix1]]
   i2= fis$input[[ix2]]
   o1= fis$output[[ox1]]
@@ -189,10 +188,10 @@ gensurf <- function(fis, ix1=1, ix2=2, ox1=1) {
   m= as.matrix(expand.grid(x, y))
 
   o= evalfis(m, fis)
-  z= matrix(o[,ox1], 15, 15, byrow=TRUE)
+  z= matrix(o[,ox1], 15, 15, byrow=F)
 
   h= (z[-15,-15] + z[-1,-15] + z[-15,-1] + z[-1,-1]) / 4
-  h= floor((h-min(h))/(max(h)-min(h))*14+.5)+1
+  h= floor((h-min(h, na.rm=T))/(max(h, na.rm=T)-min(h, na.rm=T))*14+.5)+1
 
   persp(x, y, z,
     xlab=i1$name, ylab=i2$name, zlab=o1$name,
@@ -226,6 +225,7 @@ plotmf <- function(fis, varType, varIndex,xx=NULL,timelimit=0,xlab=NULL,ylab=NUL
 	    var <- fis$output[[varIndex]]
 	}
 
+    if(is.null(xlab)) xlab=var$name
     plotvar(var, xx, timelimit, xlab, ylab, main)
 }
 
@@ -276,8 +276,10 @@ anfis.plotmf <- function(anfis, varType, varIndex, xx=NULL, timelimit=0, xlab=NU
 	    stop("plots for output membership functions not supported")
 	}
 
+    if(is.null(xlab)) xlab=var$name
     plotvar(var, xx, timelimit, xlab, ylab, main)
 }
+
 
 plotvar <- function(var, xx=NULL, timelimit=0, xlab=NULL, ylab=NULL, main=NULL) {
 	point_n=501
@@ -285,7 +287,7 @@ plotvar <- function(var, xx=NULL, timelimit=0, xlab=NULL, ylab=NULL, main=NULL) 
 	x= seq(var$range[1], var$range[2], length=point_n)
 	x <- round(x, 4)
 	y= c(rep(0, point_n-1), 1)
-	plot_graph(x,y,title=main,xlab=var$name,ylab="u")
+	plot_graph(x,y,title=main,xlab=xlab,ylab=ylab)
 
 	if (timelimit==0){
 		for ( i in 1:length(var$mf) ) {
@@ -363,32 +365,40 @@ plotvar <- function(var, xx=NULL, timelimit=0, xlab=NULL, ylab=NULL, main=NULL) 
 	if (length(xx)>0)
 
 	for (i in 1:length(xx)){
-	mtext(paste(xx[i]),side=1,col="red",at=c(xx[i]),cex=.8);
-
+	    mtext(paste(xx[i]),side=1,col="red",at=c(xx[i]),cex=.8);
 	}
 }
 
 
 # plot_graph - used in plotmf
 plot_graph <- function (x,y,xlab=NULL,ylab=NULL,title=NULL){
-
 	plot(x, y, type="n",col=2,bty="o",xaxs = "i",yaxs = "i",cex.axis=.8,cex.lab=.8,main=title,xaxt="n",yaxt="n",ylab="",xlab="",las=1)
 
 	point_n <- length(x)
 	axis(1,labels=FALSE,tick=TRUE,pos=0)
 	mtext(x[1],side=1,line=1,outer=FALSE,adj=0,cex=.8)
+
 	if (length(xlab)==0){
 		mtext("x",side=1,line=1,outer=FALSE,padj=0,cex=.8)
-	} else mtext(xlab,side=1,line=1,outer=FALSE,padj=0,cex=.8)
-	mtext(x[point_n],side=1,line=1,outer=FALSE,adj=1,cex=.8)
+	} else {
+	    mtext(xlab,side=1,line=1,outer=FALSE,padj=0,cex=.8)
+	}
 
+	mtext(x[point_n],side=1,line=1,outer=FALSE,adj=1,cex=.8)
 	axis(2,labels=FALSE,tick=TRUE,pos=0)
 	mtext(y[1],side=2,line=1,outer=FALSE,at=c(0),cex=.8,las=1)
+
 	if (length(ylab)==0){
 		mtext("m",side=2,line=1,outer=FALSE,padj=0,cex=.8,las=1,font=5)
-	} else mtext(ylab,side=2,line=1,outer=FALSE,padj=0,cex=.8,las=1,font=5)
-	mtext(y[point_n],side=2,line=1,outer=FALSE,at=c(1),cex=.8,las=1)
+	} else {
+	    if(ylab %in% c('u', 'm')) {
+	        mtext(ylab,side=2,line=1,outer=FALSE,padj=0,cex=.8,las=1,font=5)
+	    } else {
+	        mtext(ylab,side=2,line=1,outer=FALSE,padj=0,cex=.8)
+	    }
+	}
 
+	mtext(y[point_n],side=2,line=1,outer=FALSE,at=c(1),cex=.8,las=1)
 }
 
 
@@ -493,7 +503,6 @@ writefis <- function(fis, fileName='fuzzy.fis') {
 #' @return A fis structure with its values generated from that of the files.
 #' @export
 readfis <- function(fileName) {
-
   fileText <- readLines(fileName)
   if ( length(fileText) == 0 )
     stop('Zero length file!')
@@ -785,14 +794,12 @@ showfis <- function(fis) {
 #' @export
 evalfis <- function(input_stack, fis) {
 
-
-
   point_n= 101
   if ( !exists("GLOBAL_FIS") || !identical(fis, .GlobalEnv$GLOBAL_FIS) ) {
 
-     # Add '.GlobalEnv$' to replace super assignment '<<-' (by Chao & Tajul)
+    # Add '.GlobalEnv$' to replace super assignment '<<-' (by Chao & Tajul)
 
-     # print("initialising ...")
+    #print("initialising ...")
     .GlobalEnv$GLOBAL_FIS    <- fis
     .GlobalEnv$FIS_TYPE      <- fis$type
     .GlobalEnv$IN_N          <- length(fis$input)
@@ -953,7 +960,6 @@ evalfis <- function(input_stack, fis) {
   .GlobalEnv$D_out <- round(output_stack,2)
   #end
   output_stack
-
 }
 
 #' Defuzzify a set of values.
@@ -968,23 +974,27 @@ evalfis <- function(input_stack, fis) {
 #' Crisp_value = defuzz(1:10, c(1.5, 5), "centroid")
 #' @export
 defuzz <- function(x, mf, type) {
-  if ( type == "centroid" )
-    sum(mf * x) / sum(mf)
-  else if ( type == "bisector" ) {
-  	cs= cumsum(mf)
-	a2= sum(mf)/2
-	xs= match(TRUE, cs>a2)
-	x[xs-1] + (a2-cs[xs-1])/mf[xs] + (x[xs]-x[xs-1])/2
-  } else if ( type == "mom" )
-    mean(x[which(mf == max(mf))])
-  else if ( type == "som" )
-    x[min(which(mf == max(mf)))]
-  else if ( type == "lom" )
-    x[max(which(mf == max(mf)))]
-  else
-    NA
+    if ( type == "centroid" )
+        if(sum(mf, na.rm=T) != 0) {
+            sum(mf * x, na.rm=T) / sum(mf, na.rm=T)
+        } else {
+            mean(x, na.rm=T)
+        }
+    else if ( type == "bisector" ) {
+        cs= cumsum(mf)
+        a2= sum(mf)/2
+        xs= match(TRUE, cs>a2)
+        x[xs-1] + (a2-cs[xs-1])/mf[xs] + (x[xs]-x[xs-1])/2
+    } else if ( type == "mom" ) {
+        mean(x[which(mf == max(mf))])
+    } else if ( type == "som" ) {
+        x[min(which(mf == max(mf)))]
+    } else if ( type == "lom" ) {
+        x[max(which(mf == max(mf)))]
+    } else {
+        NA
+    }
 }
-
 
 #' @title TSK FIS builder
 #' @description
@@ -1972,7 +1982,7 @@ showGUI = function(fis){
     a10 = fis$input[[10]]$range
   }
 
-ui = fluidPage(
+  ui = fluidPage(
     titlePanel(title=h1(paste("Type-1 Fuzzy Logic : ", fis$name), align="center")),
     br(),
     sidebarLayout(
@@ -2091,6 +2101,96 @@ ui = fluidPage(
             sliderInput("13",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
             sliderInput("14",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
             sliderInput("15",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1)
+
+          )
+        ),
+        conditionalPanel(
+          condition = "input.out == 6",
+          radioButtons("eva6", "Evaluate FIS ",
+                       list("Reset" = 1,
+                            "evalfis()" = 2)),
+          conditionalPanel(
+            condition = "input.eva6 == 2",
+            sliderInput("16",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
+            sliderInput("17",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
+            sliderInput("18",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
+            sliderInput("19",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
+            sliderInput("20",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
+            sliderInput("21",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1)
+
+          )
+        ),
+        conditionalPanel(
+          condition = "input.out == 7",
+          radioButtons("eva7", "Evaluate FIS ",
+                       list("Reset" = 1,
+                            "evalfis()" = 2)),
+          conditionalPanel(
+            condition = "input.eva7 == 2",
+            sliderInput("22",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
+            sliderInput("23",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
+            sliderInput("24",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
+            sliderInput("25",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
+            sliderInput("26",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
+            sliderInput("27",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
+            sliderInput("28",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1)
+
+          )
+        ),
+        conditionalPanel(
+          condition = "input.out == 8",
+          radioButtons("eva8", "Evaluate FIS ",
+                       list("Reset" = 1,
+                            "evalfis()" = 2)),
+          conditionalPanel(
+            condition = "input.eva8 == 2",
+            sliderInput("29",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
+            sliderInput("30",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
+            sliderInput("31",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
+            sliderInput("32",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
+            sliderInput("33",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
+            sliderInput("34",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
+            sliderInput("35",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1),
+            sliderInput("36",  input_8, min=a8[1], max=a8[2], value=0.1, step=0.1)
+
+          )
+        ),
+        conditionalPanel(
+          condition = "input.out == 9",
+          radioButtons("eva9", "Evaluate FIS ",
+                       list("Reset" = 1,
+                            "evalfis()" = 2)),
+          conditionalPanel(
+            condition = "input.eva9 == 2",
+            sliderInput("37",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
+            sliderInput("38",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
+            sliderInput("39",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
+            sliderInput("40",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
+            sliderInput("41",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
+            sliderInput("42",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
+            sliderInput("43",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1),
+            sliderInput("44",  input_8, min=a8[1], max=a8[2], value=0.1, step=0.1),
+            sliderInput("45",  input_9, min=a9[1], max=a9[2], value=0.1, step=0.1)
+
+          )
+        ),
+        conditionalPanel(
+          condition = "input.out == 10",
+          radioButtons("eva10", "Evaluate FIS ",
+                       list("Reset" = 1,
+                            "evalfis()" = 2)),
+          conditionalPanel(
+            condition = "input.eva10 == 2",
+            sliderInput("46",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
+            sliderInput("47",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
+            sliderInput("48",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
+            sliderInput("49",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
+            sliderInput("50",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
+            sliderInput("51",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
+            sliderInput("52",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1),
+            sliderInput("53",  input_8, min=a8[1], max=a8[2], value=0.1, step=0.1),
+            sliderInput("54",  input_9, min=a9[1], max=a9[2], value=0.1, step=0.1),
+            sliderInput("55",  input_10, min=a10[1], max=a10[2], value=0.1, step=0.1)
 
           )
         ),
@@ -2424,8 +2524,31 @@ ui = fluidPage(
         out_name = fis$output[[1]]$name
         evalfis(c(input$`11`,input$`12`,input$`13`,input$`14`,input$`15`),fis)
         plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+      }else if (NumInput==6){
 
+        out_name = fis$output[[1]]$name
+        evalfis(c(input$`16`,input$`17`,input$`18`,input$`19`,input$`20`,input$`21`),fis)
+        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+      }else if (NumInput==7){
 
+        out_name = fis$output[[1]]$name
+        evalfis(c(input$`22`,input$`23`,input$`24`,input$`25`,input$`26`,input$`27`,input$`28`),fis)
+        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+      }else if (NumInput==8){
+
+        out_name = fis$output[[1]]$name
+        evalfis(c(input$`29`,input$`30`,input$`31`,input$`32`,input$`33`,input$`34`,input$`35`,input$`36`),fis)
+        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+      }else if (NumInput==9){
+
+        out_name = fis$output[[1]]$name
+        evalfis(c(input$`37`,input$`38`,input$`39`,input$`40`,input$`41`,input$`42`,input$`43`,input$`44`,input$`45`),fis)
+        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+      }else if (NumInput==10){
+
+        out_name = fis$output[[1]]$name
+        evalfis(c(input$`46`,input$`47`,input$`48`,input$`49`,input$`50`,input$`51`,input$`52`,input$`53`,input$`54`,input$`55`),fis)
+        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
       }
 
 
@@ -2467,8 +2590,36 @@ ui = fluidPage(
           pdf(file)
           plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
           dev.off()
-
-
+        }else if (NumInput==6){
+          out_name = fis$output[[1]]$name
+          evalfis(c(input$`16`,input$`17`,input$`18`,input$`19`,input$`20`,input$`21`),fis)
+          pdf(file)
+          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+          dev.off()
+        }else if (NumInput==7){
+          out_name = fis$output[[1]]$name
+          evalfis(c(input$`22`,input$`23`,input$`24`,input$`25`,input$`26`,input$`27`,input$`28`),fis)
+          pdf(file)
+          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+          dev.off()
+        }else if (NumInput==8){
+          out_name = fis$output[[1]]$name
+          evalfis(c(input$`29`,input$`30`,input$`31`,input$`32`,input$`33`,input$`34`,input$`35`,input$`36`),fis)
+          pdf(file)
+          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+          dev.off()
+        }else if (NumInput==9){
+          out_name = fis$output[[1]]$name
+          evalfis(c(input$`37`,input$`38`,input$`39`,input$`40`,input$`41`,input$`42`,input$`43`,input$`44`,input$`45`),fis)
+          pdf(file)
+          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+          dev.off()
+        }else if (NumInput==10){
+          out_name = fis$output[[1]]$name
+          evalfis(c(input$`46`,input$`47`,input$`48`,input$`49`,input$`50`,input$`51`,input$`52`,input$`53`,input$`54`,input$`55`),fis)
+          pdf(file)
+          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
+          dev.off()
         }
 
       }
@@ -2897,7 +3048,7 @@ ui = fluidPage(
     })
   }
 
-shinyApp(ui = ui, server = server)
+  shinyApp(ui = ui, server = server)
 
 }
 

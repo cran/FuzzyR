@@ -6,10 +6,23 @@
 #' according to type and parameters
 #' @param mf.type The membership function type
 #' @param mf.params The parameters for a membership function
+#' @details
+#' Built-in membership function types are: 'gbellmf', 'it2gbellmf', 'singletonmf', 'linearmf', 'gaussmf', 'trapmf', 'trimf'.
+#' \cr \cr mf.params for 
+#' \itemize{
+#' \item 'gbellmf' is c(\code{a, b, c}), where \code{a} denotes the width, \code{b} is usually positive and {c} locates the center of the curve.
+#' \cr \item 'it2gbellmf' is c(\code{a.lower, a.upper, b, c}), where \code{a.upper > a.lower} when \code{b > 0} and \code{a.upper < a.lower} when \code{b < 0}
+#' \cr \item 'singletonmf' is c(\code{c}), where \code{c} is the location where the membership grade is 1.
+#' \cr \item 'linearmf' is c(\code{...}), which are the coefficients of the linear membership function.
+#' \cr \item 'gaussmf' is c(\code{sig, c}), which are the parameters for exp(-(x - c)^2/(2 * sig^2)).
+#' \cr \item 'trapmf' is c(\code{a, b, c, d}), where \code{a} and \code{d} locate the "feet" of the trapezoid and \code{b} and \code{c} locate the "shoulders".
+#' \cr \item 'trimf' is c(\code{a, b, c}), where \code{a} and \code{c} locate the "feet" of the triangle and \code{b} locates the peak.
+#' }
+#' Note that users are able to define their own membership functions.
 #' @return The desired type of membership function f(x),
 #' where x is a generic element of U, which is the universe of discourse for a fuzzy set
 #' @examples
-#' mf <- genmf(gbellmf, c(1,2,3))
+#' mf <- genmf('gbellmf', c(1,2,3))
 #' evalmf(1:10, mf)
 #' @author Chao Chen
 #' @export
@@ -60,7 +73,7 @@ evalmftype <- function(x, mf.type, mf.params) {
 #' evalmf(5, mf.type=gbellmf, mf.params=c(1,2,3))
 #' evalmf(1:10, mf.type=gbellmf, mf.params=c(1,2,3))
 #'
-#' mf <- genmf(gbellmf, c(1,2,3))
+#' mf <- genmf('gbellmf', c(1,2,3))
 #' evalmf(5, mf)
 #' evalmf(1:10, mf)
 #' @author Chao Chen
@@ -73,13 +86,11 @@ evalmf <- function(...) {
 
     if(params.len == 3) {
         MF <- genmf(mf.type=params[[2]], mf.params=params[[3]])
-
     } else if(params.len == 2) {
         MF <- params[[2]]
-
     }
 
-   sapply(c(MF), function(F) F(x))
+    sapply(c(MF), function(F) F(x))
 }
 
 
@@ -94,7 +105,7 @@ evalmf <- function(...) {
 #' @examples
 #' mf <- gbellmf(c(1,2,3))
 #' # This is the same as:
-#' mf <- genmf(gbellmf, c(1,2,3))
+#' mf <- genmf('gbellmf', c(1,2,3))
 #'
 #' evalmf(5, mf)
 #' @author Chao Chen
@@ -116,6 +127,75 @@ gbellmf <- function(mf.params) {
 }
 
 
+#' @title Gaussian bell fuzzification
+#' @description
+#' To generate a fuzzy membership function based on Gaussian bell fuzzification for the given crisp input x
+#' @param x the crisp input, which will be the parameter c for a gaussian bell membership function
+#' @param mf.params the parameters c(a, b) for a gaussian bell membership function
+#' @return The gbell MF centred at the crisp point x
+#' @examples
+#' mf <- gbell.fuzzification(3, c(1,2))
+#' # This is the same as:
+#' mf <- genmf('gbellmf', c(1,2,3))
+#'
+#' evalmf(1:10, mf)
+#' @author Chao Chen
+#' @export
+
+gbell.fuzzification <- function(x, mf.params) {
+    mf.params <- c(mf.params, x)
+    genmf('gbellmf', mf.params)
+}
+
+
+## Function: it2gbellmf
+##  Description:
+##      to specify a interval type-2 gaussian bell membership function with a pair of particular parameters
+##  Input:
+##      mf.params: the parameters c(a.lower, a.upper, b, c) for a gaussian bell membership function
+##  Output:
+##      the lower and upper gaussian bell membership function of x for a given pair of parameters
+##      , where x is a generic element of U, which is the universe of discourse of a fuzzy set X
+
+it2gbellmf <- function(mf.params) {
+
+    if(length(mf.params) != 4) {
+        stop("improper parameters for gaussian bell membership function")
+    }
+
+    a.lower <- mf.params[1]
+    a.upper <- mf.params[2]
+    b <- mf.params[3]
+    c <- mf.params[4]
+
+    gbellmf.lower <- function(x) {
+        1 / ( 1 + (((x - c)/a.lower)^2)^b)
+    }
+
+    gbellmf.upper <- function(x) {
+        1 / ( 1 + (((x - c)/a.upper)^2)^b)
+    }
+
+    it2gbellmf <- c(gbellmf.lower, gbellmf.upper)
+}
+
+
+## Function: it2gbell.fuzzification
+##  Description:
+##      to make a interval type-2 gaussian bell fuzzification to the crisp input
+##  Input:
+##      x: the crisp input, which will be the parameter c for a gaussian bell membership function
+##      mf.params: the parameters c(a.lower, a.upper, b) for a gaussian bell membership function
+##  Output:
+##      the lower and upper gaussian bell membership function of x for a given pair of parameters
+##      , where x is a generic element of U, which is the universe of discourse of a fuzzy set X
+
+it2gbell.fuzzification <- function(x, mf.params) {
+    mf.params <- c(mf.params, x)
+    it2gbellmf(mf.params)
+}
+
+
 #' @title Singleton membership function
 #' @description
 #' To specify a singleton membership function at the particular point
@@ -127,7 +207,7 @@ gbellmf <- function(mf.params) {
 #' @examples
 #' mf <- singletonmf(3)
 #' # This is the same as:
-#' mf <- genmf(singletonmf, 3)
+#' mf <- genmf('singletonmf', 3)
 #'
 #' evalmf(1:10, mf)
 #' @author Chao Chen
@@ -142,6 +222,24 @@ singletonmf <- function(mf.params) {
     singletonmf <- function(x) {
         ifelse(x == mf.params, 1, 0)
     }
+}
+
+
+#' @title Singleton Fuzzification
+#' @description
+#' To generate a fuzzy membership function based on singleton fuzzification for the given crisp input x
+#' @param x the crisp input
+#' @param mf.params not used, singleton fuzzification does not need additional parameters
+#' @return The singleton MF at the crisp point x
+#' @examples
+#' mf <- singleton.fuzzification(3)
+#' evalmf(1:10, mf)
+#' @author Chao Chen
+#' @export
+
+singleton.fuzzification <- function(x, mf.params) {
+    mf.params <- x
+    singletonmf(mf.params)
 }
 
 
@@ -200,43 +298,9 @@ trimf <- function(mf.params) {
 }
 
 
-
-#' @title Singleton Fuzzification
-#' @description
-#' To generate a fuzzy membership function based on singleton fuzzification for the given crisp input x
-#' @param x the crisp input
-#' @param mf.params not used, singleton fuzzification does not need additional parameters
-#' @return The singleton MF at the crisp point x
-#' @examples
-#' mf <- singleton.fuzzification(3)
-#' evalmf(1:10, mf)
-#' @author Chao Chen
-#' @export
-
-singleton.fuzzification <- function(x, mf.params) {
-    mf.params <- x
-    singletonmf(mf.params)
-}
-
-
-#' @title Gaussian bell fuzzification
-#' @description
-#' To generate a fuzzy membership function based on Gaussian bell fuzzification for the given crisp input x
-#' @param x the crisp input, which will be the parameter c for a gaussian bell membership function
-#' @param mf.params the parameters c(a, b) for a gaussian bell membership function
-#' @return The gbell MF centred at the crisp point x
-#' @examples
-#' mf <- gbell.fuzzification(3, c(1,2))
-#' # This is the same as:
-#' mf <- genmf(gbellmf, c(1,2,3))
-#'
-#' evalmf(1:10, mf)
-#' @author Chao Chen
-#' @export
-
-gbell.fuzzification <- function(x, mf.params) {
-    mf.params <- c(mf.params, x)
-    genmf(gbellmf, mf.params)
+trimf.fuzzification <- function(x, mf.params) {
+    mf.params <- append(mf.params, x, 1)
+    trimf(mf.params)
 }
 
 

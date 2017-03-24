@@ -31,7 +31,7 @@ This function can be used in two ways in order to obtain the membership grade(s)
 evalmf(5, mf.type=gbellmf, mf.params=c(1,2,3))
 evalmf(1:10, mf.type=gbellmf, mf.params=c(1,2,3))
 
-mf <- genmf(gbellmf, c(1,2,3))
+mf <- genmf('gbellmf', c(1,2,3))
 evalmf(5, mf)
 evalmf(1:10, mf)
 }

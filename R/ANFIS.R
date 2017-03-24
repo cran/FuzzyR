@@ -10,13 +10,12 @@ NULL
 #' To build an ANFIS model from an existing FIS model
 #' @param fis A fuzzy inference system model initialised by \code{\link{newfis}}.
 #' @return An ANFIS model
-#' @details
 #' @examples
 #' fis <- anfis.tipper()
 #' anfis <- anfis.builder(fis)
 #' @author Chao Chen
 #' @references
-#' An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models \url{http://eprints.nottingham.ac.uk/33465/}
+#' An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models \url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
 #' @export
 
 anfis.builder <- function(fis) {
@@ -129,7 +128,6 @@ anfis.builder <- function(fis) {
 ##                        defuzzMethod=fis$defuzzMethod, rule=fis$rule, layer=NULL)
 ## anfis <- anfis.addlayer(anfis, "inputs")
 ## @author Chao Chen
-## @references
 ## @export
 
 anfis.addlayer <- function(anfis, name) {
@@ -138,23 +136,22 @@ anfis.addlayer <- function(anfis, name) {
 }
 
 
-#' @title ANFIS node adder
-#' @description
-#' To add a node to the specified layer of a given ANFIS model.
-#' @param anfis The given ANFIS model
-#' @param idx The index of the layer where node is going to be added.
-#' @param value node value
-#' @param dedo The derivative of the error to the output of this node.
-#' @param fan.in The indexes of input nodes from previous layer.
-#' @param fan.out The indexes of output nodes in next layer.
-#' @param mf.type membership function type, if this is a node of fuzzy membership function.
-#' @param mf.params The parameters for the membership function
-#' @param range The universe of discourse for the membership function
-#' @param mf.name The name of membership function
-#' @return The ANFIS model with added node.
-#' @details This function is not designed for external use.
-#' @author Chao Chen
-#' @references
+## @title ANFIS node adder
+## @description
+## To add a node to the specified layer of a given ANFIS model.
+## @param anfis The given ANFIS model
+## @param idx The index of the layer where node is going to be added.
+## @param value node value
+## @param dedo The derivative of the error to the output of this node.
+## @param fan.in The indexes of input nodes from previous layer.
+## @param fan.out The indexes of output nodes in next layer.
+## @param mf.type membership function type, if this is a node of fuzzy membership function.
+## @param mf.params The parameters for the membership function
+## @param range The universe of discourse for the membership function
+## @param mf.name The name of membership function
+## @return The ANFIS model with added node.
+## @details This function is not designed for external use.
+## @author Chao Chen
 
 anfis.addnode <- function(anfis, idx, value=NULL, dedo=NULL, fan.in=NULL, fan.out=NULL, mf.type=NULL, mf.params=NULL, range=NULL, mf.name=NULL) {
 
@@ -171,7 +168,6 @@ anfis.addnode <- function(anfis, idx, value=NULL, dedo=NULL, fan.in=NULL, fan.ou
 #' @param anfis The given ANFIS model
 #' @param input.stack The input data
 #' @return The output of the anfis for given input data.
-#' @details
 #' @examples
 #' fis <- anfis.tipper()
 #' anfis <- anfis.builder(fis)
@@ -182,7 +178,6 @@ anfis.addnode <- function(anfis, idx, value=NULL, dedo=NULL, fan.in=NULL, fan.ou
 #' data.trn <- cbind(input.stack, y)
 #' anfis.eval(anfis, input.stack)
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.eval <- function(anfis, input.stack) {
@@ -218,7 +213,6 @@ anfis.eval <- function(anfis, input.stack) {
 #' @param lambda The forgetting rate for the LSE algorithm
 #' @param opt.by To optimise the ANFIS model by: err.opt -- optimisation error; err.trn -- training error; err.chk -- checking (validation) error.
 #' @return The optimised ANFIS model.
-#' @details
 #' @examples
 #' fis <- anfis.tipper()
 #' anfis <- anfis.builder(fis)
@@ -262,12 +256,13 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
     data.num <- nrow(data.trn)
     input.stack <- input.stack.all <- data.trn[, 1:input.num]
     target <- target.all <- as.matrix(data.trn[, -(1:input.num)])
+    scale.mase <- mean(abs(data.trn[,input.num] - data.trn[,(input.num+1)]))
 
     anfis.optimum <- anfis
     err.min <- Inf
     err.min.rec <- NULL
     err.min.rec.tmp <- NULL
-    decflag <- NULL
+    err.opt.rec <- Inf
     epoch.last <- 1
 
     if(err.log) {
@@ -277,7 +272,7 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
         .GlobalEnv$err.chk <- matrix(0, nrow=epoch.total, ncol=8)
         .GlobalEnv$theta.L1 <- NULL
         .GlobalEnv$theta.L4 <- NULL
-        colnames(.GlobalEnv$err.opt) <<- colnames(.GlobalEnv$err.trn) <<- colnames(.GlobalEnv$err.chk) <<- c("MAE","RMSE","MASE", "MRAE", "GMRAE", "MAPE","sMAPE","uMbRAE")
+        colnames(.GlobalEnv$err.opt) <- colnames(.GlobalEnv$err.trn) <- colnames(.GlobalEnv$err.chk) <- c("MAE","RMSE","MASE", "MRAE", "GMRAE", "MAPE","sMAPE","uMbRAE")
     }
 
     epoch <- p <- 1
@@ -339,15 +334,15 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
                 anfis.output <- output.L5
             }
 
-            if(err.log || opt.by != "err.opt") {
-                err.tmp <- myaccuracy(anfis.output, data.trn[,(input.num+1)], data.trn[1,input.num], data.trn[,input.num])
+            if(err.log) {
+                err.tmp <- fuzzyr.accuracy(anfis.output, data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
                 .GlobalEnv$err.opt[epoch,] <- err.tmp
 
-                err.tmp <- myaccuracy(anfis.eval(anfis, data.trn[,1:input.num]), data.trn[,(input.num+1)], data.trn[1,input.num], data.trn[,input.num])
+                err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.trn[,1:input.num]), data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
                 .GlobalEnv$err.trn[epoch,] <- err.tmp
 
                 if(!is.null(data.chk)) {
-                    err.tmp <- myaccuracy(anfis.eval(anfis, data.chk[,1:input.num]), data.chk[,(input.num+1)], data.chk[1,input.num], data.chk[,input.num])
+                    err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.chk[,1:input.num]), data.chk[,(input.num+1)], data.chk[,input.num], scale.mase)
                     .GlobalEnv$err.chk[epoch,] <- err.tmp
                 }
 
@@ -365,17 +360,27 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
                 .GlobalEnv$theta.L4 <- rbind(.GlobalEnv$theta.L4, theta.L4.tmp)
             }
 
+            err.opt.rmse <- sqrt(mean((anfis.output - target.all)^2))
             if(opt.by == "err.trn") {
-                err.epoch <- .GlobalEnv$err.trn[epoch,2]
+                if(err.log) {
+                    err.epoch <- .GlobalEnv$err.trn[epoch,2]
+                } else {
+                    err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.trn[,1:input.num]), data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
+                    err.epoch <- err.tmp[2]
+                }
             } else if (opt.by == "err.chk") {
-                err.epoch <- .GlobalEnv$err.chk[epoch,2]
+                if(err.log) {
+                    err.epoch <- .GlobalEnv$err.chk[epoch,2]
+                } else {
+                    err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.chk[,1:input.num]), data.chk[,(input.num+1)], data.chk[,input.num], scale.mase)
+                    err.epoch <- err.tmp[2]
+                }
             } else {
-                err.epoch <- sqrt(mean((anfis.output - target.all)^2))
+                err.epoch <- err.opt.rmse
             }
 
             #cat(" epoch[", epoch, "], err=", err.epoch, "\n")
             if(err.epoch < err.min) {
-                decflag <- c(decflag, 1)
                 err.min <- err.epoch
                 err.min.rec.tmp <- c(err.min.rec.tmp, err.min)
                 if(length(err.min.rec.tmp) == 1000) {
@@ -383,29 +388,26 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
                     err.min.rec.tmp <- NULL
                 }
                 anfis.optimum <- anfis
-            } else if (err.epoch > err.min) {
-                decflag <- c(decflag, -1)
-            } else {
-                decflag <- c(decflag, 0)
             }
 
             ## to update step_size
 
             #cat("epoch - epoch.last: ", epoch - epoch.last, "\n")
-            #cat("decflag: ", decflag, "\n")
-            #cat("sum(tail(decflag, 4)): ", sum(tail(decflag, 4)), "\n")
             #cat("stepsize: ", stepsize, "\n")
 
+            err.opt.rec <- c(err.opt.rec, err.opt.rmse)
             if( epoch - epoch.last >= 4) {
-                if(sum(tail(decflag, 4)) == 4) {
+                err.opt.rec <- tail(err.opt.rec, 5)
+                decflag <- -sign(diff(err.opt.rec))
+
+                decflag.sum <- sum(decflag)
+                if(decflag.sum == 4) {
                     stepsize <- stepsize * rate.inc
                     epoch.last <- epoch
-                    decflag <- NULL
-                } else if(sum(tail(decflag, 4)) <= 0) {
-                #} else if( identical(tail(decflag, 4), c(-1,1,-1,1)) ) {
+                } else if(decflag.sum <= 0) {
+                #} else if( identical(decflag, c(-1,1,-1,1)) ) {
                     stepsize = stepsize * rate.dec
                     epoch.last = epoch
-                    decflag <- NULL
                 }
             }
         }
@@ -447,17 +449,17 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
 }
 
 
-#' @title The gradient algorithm for ANFIS optimisation
-#' @description
-#' To update the mf.params in Layer 1 or Layer 4 by the gradient decent methed
-#' @param anfis The given ANFIS model
-#' @param L The index of the layer in which the parameters to be optimised
-#' @param de.dp The derivatives of the output error to the parameters
-#' @param stepsize the stepsize for updating the parameters
-#' @return The ANFIS model with updated parameters
-#' @details This function is not designed for external use.
-#' @author Chao Chen
-#' @references
+## @title The gradient algorithm for ANFIS optimisation
+## @description
+## To update the mf.params in Layer 1 or Layer 4 by the gradient decent methed
+## @param anfis The given ANFIS model
+## @param L The index of the layer in which the parameters to be optimised
+## @param de.dp The derivatives of the output error to the parameters
+## @param stepsize the stepsize for updating the parameters
+## @return The ANFIS model with updated parameters
+## @details This function is not designed for external use.
+## @author Chao Chen
+## @references
 
 anfis.optimise.gradient <- function(anfis, L, de.dp, stepsize) {
 
@@ -471,7 +473,8 @@ anfis.optimise.gradient <- function(anfis, L, de.dp, stepsize) {
             mf.type <- anfis$layer[[L]]$node[[i]]$mf.type
             if((mf.type == "it2gbellmf" && sign(mf.params[3]) * abs(mf.params[1]) > sign(mf.params[3]) * abs(mf.params[2]))
                 || (mf.type == "itlinearmf" && mf.params[1] > mf.params[2])) {
-                    mf.params[1] <- mf.params[2]
+#                    mf.params[1] <- mf.params[2]
+                    mf.params[c(1,2)] <- mf.params[c(2,1)]
             }
             anfis$layer[[L]]$node[[i]]$mf.params <- mf.params
         }
@@ -481,19 +484,19 @@ anfis.optimise.gradient <- function(anfis, L, de.dp, stepsize) {
 }
 
 
-#' @title The LSE algorithm for ANFIS optimisation
-#' @description
-#' to update the mf.params in L4 by the LSE algorithm
-#' @param anfis The given ANFIS model
-#' @param output.L3 The output of nodes from Layer 3
-#' @param input.stack The input data (training data)
-#' @param target The output data (training data)
-#' @param online 0 -- batch; 1,2 -- online
-#' @param lambda the forgetting rate
-#' @return The ANFIS model with updated parameters
-#' @details This function is not designed for external use.
-#' @author Chao Chen
-#' @references
+## @title The LSE algorithm for ANFIS optimisation
+## @description
+## to update the mf.params in L4 by the LSE algorithm
+## @param anfis The given ANFIS model
+## @param output.L3 The output of nodes from Layer 3
+## @param input.stack The input data (training data)
+## @param target The output data (training data)
+## @param online 0 -- batch; 1,2 -- online
+## @param lambda the forgetting rate
+## @return The ANFIS model with updated parameters
+## @details This function is not designed for external use.
+## @author Chao Chen
+## @references
 
 anfis.optimise.lse <- function(anfis, output.L3, input.stack, target, online=0, lambda=1) {
 
@@ -518,7 +521,11 @@ anfis.optimise.lse <- function(anfis, output.L3, input.stack, target, online=0, 
     if(!online || is.null(anfis$S)) {
     #if(is.null(anfis$S)) {
         S <- 999999 *  diag(ncol(A))
-        theta <- matrix(rep(0, node.num * ncol(input.x)), ncol=1)
+        if(!online) {
+            theta <- matrix(rep(0, node.num * ncol(input.x)), ncol=1)
+        } else {
+            theta <- matrix(sapply(anfis$layer[[L]]$node, function(x) x$mf.params), ncol=1)
+        }
     } else {
         S <- anfis$S
         theta <- matrix(sapply(anfis$layer[[L]]$node, function(x) x$mf.params), ncol=1)
@@ -555,7 +562,6 @@ anfis.optimise.lse <- function(anfis, output.L3, input.stack, target, online=0, 
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.LI.eval <- function(anfis, input.stack) {
@@ -586,7 +592,6 @@ anfis.LI.eval <- function(anfis, input.stack) {
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.L1.eval <- function(anfis, output.LI, input.stack) {
@@ -632,7 +637,6 @@ anfis.L1.eval <- function(anfis, output.LI, input.stack) {
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.L2.eval <- function(anfis, output.L1) {
@@ -685,7 +689,6 @@ anfis.L2.eval <- function(anfis, output.L1) {
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.L2.which <- function(anfis, output.L2, output.L4.mf) {
@@ -708,8 +711,8 @@ anfis.L2.which <- function(anfis, output.L2, output.L4.mf) {
             w.upper <- w.L2[,2]
             f.lower <- f.L4[,1]
             f.upper <- f.L4[,2]
-            w.which.lower <- ekm(w.lower, w.upper, f.lower, maximum=F, w.which=T)
-            w.which.upper <- ekm(w.lower, w.upper, f.upper, maximum=T, w.which=T)
+            w.which.lower <- km.da(w.lower, w.upper, f.lower, maximum=F, w.which=T)
+            w.which.upper <- km.da(w.lower, w.upper, f.upper, maximum=T, w.which=T)
 
             output.L2.which.lower <- lapply(1:node.num, function(idx) rbind(output.L2.which.lower[[idx]], if(col.num[idx] == 1) TRUE else w.which.lower[idx,]))
             output.L2.which.upper <- lapply(1:node.num, function(idx) rbind(output.L2.which.upper[[idx]], if(col.num[idx] == 1) TRUE else w.which.upper[idx,]))
@@ -731,7 +734,6 @@ anfis.L2.which <- function(anfis, output.L2, output.L4.mf) {
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.L3.eval <- function(anfis, output.L2, output.L2.which) {
@@ -775,7 +777,6 @@ anfis.L3.eval <- function(anfis, output.L2, output.L2.which) {
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.L4.mf.eval <- function(anfis, input.stack) {
@@ -807,7 +808,6 @@ anfis.L4.mf.eval <- function(anfis, input.stack) {
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.L4.eval <- function(output.L3, output.L4.mf) {
@@ -825,7 +825,6 @@ anfis.L4.eval <- function(output.L3, output.L4.mf) {
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' See the source code of \code{\link{anfis.eval}} for usage.
 #' @author Chao Chen
-#' @references
 #' @export
 anfis.L5.eval <- function(output.L4) {
 
@@ -857,7 +856,6 @@ anfis.L5.eval <- function(output.L4) {
 #' @return The derivatives of output error with respect to output.L5
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dO5 <- function(output.L5, y) {
@@ -874,7 +872,6 @@ anfis.dE.dO5 <- function(output.L5, y) {
 #' @return The derivatives of output.L5 with respect to output.L4.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dO5.dO4 <- function(output.L4) {
@@ -892,7 +889,6 @@ anfis.dO5.dO4 <- function(output.L4) {
 #' @return The derivatives of output error with respect to output.L4.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dO4 <- function(anfis, de.do5, do5.do4) {
@@ -911,7 +907,6 @@ anfis.dE.dO4 <- function(anfis, de.do5, do5.do4) {
 #' @return The derivatives of output error with respect to parameters in Layer 4.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dP4 <- function(anfis, de.do4, output.L3, input.stack) {
@@ -950,7 +945,6 @@ anfis.dE.dP4 <- function(anfis, de.do4, output.L3, input.stack) {
 #' @return The derivatives of output.L4 with respect to output.L3.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dO4.dO3 <- function(output.L4, output.L4.mf) {
@@ -968,7 +962,6 @@ anfis.dO4.dO3 <- function(output.L4, output.L4.mf) {
 #' @return The derivatives of output error with respect to output.L3.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dO3 <- function(de.do4, do4.do3, output.L3) {
@@ -986,7 +979,6 @@ anfis.dE.dO3 <- function(de.do4, do4.do3, output.L3) {
 #' @return The derivatives of output.L3 with respect to output.L2. do3.left[j].do2[i] <- do3.do2[[i]][[1]][[j]]
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dO3.dO2 <- function(anfis, output.L2, output.L2.which) {
@@ -1013,9 +1005,12 @@ anfis.dO3.dO2 <- function(anfis, output.L2, output.L2.which) {
             do3.do2.tmp.j <- list()
             for ( j in 1:node.num ) {
                 if(i == j) {
-                    tmp <- (output.L2.sum[[k]] - output.L2.w[[k]][,i]) / output.L2.sum[[k]]^2
+                    # output.L2.sum[[k]]^2 may be zero if output.L2.sum[[k]] is too small
+                    #tmp <- (output.L2.sum[[k]] - output.L2.w[[k]][,i]) / output.L2.sum[[k]]^2
+                    tmp <- (output.L2.sum[[k]] - output.L2.w[[k]][,i]) / output.L2.sum[[k]] / output.L2.sum[[k]]
                 } else {
-                    tmp <- -output.L2.w[[k]][,j] / output.L2.sum[[k]]^2
+                    #tmp <- -output.L2.w[[k]][,j] / output.L2.sum[[k]]^2
+                    tmp <- -output.L2.w[[k]][,j] / output.L2.sum[[k]] / output.L2.sum[[k]]
                 }
                 do3.do2.tmp.j <- append(do3.do2.tmp.j, list(c(tmp) * output.L2.which[[k]][[i]]))
             }
@@ -1037,7 +1032,6 @@ anfis.dO3.dO2 <- function(anfis, output.L2, output.L2.which) {
 #' @return The derivatives of output error with respect to output.L2.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dO2 <- function(de.do3, do3.do2) {
@@ -1073,7 +1067,6 @@ anfis.dE.dO2 <- function(de.do3, do3.do2) {
 #' @return The derivatives of output.L2 with respect to output.L1. do2[j].do1[i] <- do2.do1[[i]][[which(fan.out==j)]]
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dO2.dO1 <- function(anfis, output.L2, output.L1) {
@@ -1126,7 +1119,6 @@ anfis.dO2.dO1 <- function(anfis, output.L2, output.L1) {
 #' @return The derivatives of output error with respect to output.L1.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dO1 <- function(anfis, output.L1, de.do2, do2.do1) {
@@ -1167,7 +1159,6 @@ anfis.dE.dO1 <- function(anfis, output.L1, de.do2, do2.do1) {
 #' @return The derivatives of output error with respect to parameters in Layer 1.
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dP1 <- function(anfis, de.do1, input.stack) {
@@ -1204,7 +1195,6 @@ anfis.dE.dP1 <- function(anfis, de.do1, input.stack) {
 #' @param mf.params parameters for membership functions
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dP1.gbellmf <- function(de.do1, x, mf.params) {
@@ -1221,7 +1211,6 @@ anfis.dE.dP1.gbellmf <- function(de.do1, x, mf.params) {
 #' @param mf.params parameters for membership functions
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dE.dP1.it2gbellmf <- function(de.do1, x, mf.params) {
@@ -1239,7 +1228,6 @@ anfis.dE.dP1.it2gbellmf <- function(de.do1, x, mf.params) {
 #' @param mf.params parameters for membership functions
 #' @details This function is not recommended for external use, but can be used for debugging or learning.
 #' @author Chao Chen
-#' @references
 #' @export
 
 anfis.dMF.dP.gbellmf <- function(x, mf.params) {
@@ -1260,21 +1248,27 @@ anfis.dMF.dP.gbellmf <- function(x, mf.params) {
 
     dmf.dp = NULL
     # partial mf to partial a
-    tmp = (2*b*tmp2)/(a*denom)
+    #tmp = (2*b*tmp2)/(a*denom)
+    tmp = (2*b*tmp2)/(1 + tmp2)/a/(1 + tmp2)
     tmp[tmp2==Inf] = 0
     tmp[which(is.nan(tmp))] = 0
+    tmp[tmp==Inf] = 0
     dmf.dp = cbind(dmf.dp , tmp)
 
     # partial mf to partial b
-    tmp = (-1*log(tmp1)*tmp2/denom)
+    #tmp = -1*log(tmp1)*tmp2/denom
+    tmp = -1*log(tmp1)*tmp2/(1 + tmp2)/(1 + tmp2)
     tmp[tmp1==0] = 0
     tmp[which(is.nan(tmp))] = 0
+    tmp[tmp==Inf] = 0
     dmf.dp = cbind(dmf.dp , tmp)
 
     # partial mf to partial c
-    tmp = (2*b*tmp2)/((x - c)*(denom))
+    #tmp = (2*b*tmp2)/((x - c)*(denom))
+    tmp = (2*b*tmp2)/(x - c)/(1 + tmp2)/(1 + tmp2)
     tmp[x==c] = 0
     tmp[which(is.nan(tmp))] = 0
+    tmp[tmp==Inf] = 0
     dmf.dp = cbind(dmf.dp , tmp)
 
     colnames(dmf.dp) <- NULL
