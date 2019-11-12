@@ -2,20 +2,20 @@
 % Please edit documentation in R/FuzzyMF.R
 \name{gbell.fuzzification}
 \alias{gbell.fuzzification}
-\title{Gaussian bell fuzzification}
+\title{Generalised bell fuzzification}
 \usage{
 gbell.fuzzification(x, mf.params)
 }
 \arguments{
-\item{x}{the crisp input, which will be the parameter c for a gaussian bell membership function}
+\item{x}{the crisp input, which will be the parameter c for a generalised bell membership function}
 
-\item{mf.params}{the parameters c(a, b) for a gaussian bell membership function}
+\item{mf.params}{the parameters c(a, b) or c(a, b, h) for a generalised bell membership function}
 }
 \value{
 The gbell MF centred at the crisp point x
 }
 \description{
-To generate a fuzzy membership function based on Gaussian bell fuzzification for the given crisp input x
+To generate a fuzzy membership function based on generalised bell fuzzification for the given crisp input x
 }
 \examples{
 mf <- gbell.fuzzification(3, c(1,2))
@@ -27,4 +27,3 @@ evalmf(1:10, mf)
 \author{
 Chao Chen
 }
-

@@ -5,8 +5,9 @@
 \title{ANFIS optimiser}
 \usage{
 anfis.optimise(anfis, data.trn, data.chk = NULL, epoch.total = 100,
-  stepsize = 0.1, rate.inc = 1.1, rate.dec = 0.9, method = c("gradient",
-  "lse"), err.log = F, online = 0, lambda = 1, opt.by = "err.opt")
+  stepsize = 0.1, rate.inc = 1.1, rate.dec = 0.9,
+  method = c("gradient", "lse"), err.log = F, online = 0,
+  lambda = 1, opt.by = "err.opt", err.trn.fix = T)
 }
 \arguments{
 \item{anfis}{The given ANFIS model}
@@ -32,6 +33,8 @@ anfis.optimise(anfis, data.trn, data.chk = NULL, epoch.total = 100,
 \item{lambda}{The forgetting rate for the LSE algorithm}
 
 \item{opt.by}{To optimise the ANFIS model by: err.opt -- optimisation error; err.trn -- training error; err.chk -- checking (validation) error.}
+
+\item{err.trn.fix}{T or F. When KM defuzzification is used for IT2 ANFIS, err.trn is not equal to err.opt. Hence, this flag is used for users to choose whether to fix this issue. The default value is set to T for the compatibility with previous built IT2 models. For T1 ANFIS, this flag can be set to F for speed improvement.}
 }
 \value{
 The optimised ANFIS model.
@@ -51,10 +54,13 @@ anfis.eval(anfis, input.stack)
 anfis.final <- anfis.optimise(anfis, data.trn, epoch.total=500,
                                  stepsize=0.01, rate.inc=1.1, rate.dec=0.9)
 }
+\references{
+[1] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models,” in Proceedings IEEE International Conference on Fuzzy Systems, 2016, pp. 602–609. \cr
+\url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
+
+[2] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “Type-1 and interval type-2 ANFIS: a comparison,” in Proceedings IEEE International Conference on Fuzzy Systems, 2017, pp. 1–6.  \cr
+\url{https://doi.org/10.1109/FUZZ-IEEE.2017.8015555}
+}
 \author{
 Chao Chen
 }
-\references{
-An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models \url{http://eprints.nottingham.ac.uk/33465/}
-}
-

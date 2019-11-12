@@ -17,4 +17,3 @@ This is a modification of the original match.fun, where parent.frame(2) is chang
 \details{
 See \code{\link{match.fun}}.
 }
-

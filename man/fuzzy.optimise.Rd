@@ -28,4 +28,3 @@ fuzzy.optimise(mf, 4, 5)
 \author{
 Chao Chen
 }
-

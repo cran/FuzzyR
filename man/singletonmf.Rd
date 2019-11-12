@@ -29,4 +29,3 @@ evalmf(1:10, mf)
 \author{
 Chao Chen
 }
-

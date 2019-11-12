@@ -1,7 +1,17 @@
 ### FuzzyR - Fuzzy Inference System
+
 # add by Tajul (to handle 'no visible binding for global variable')
-globalVariables(c("D_x","D_y","D_out","genRule","perturb","NumInputs","Range","NumMFs","mfParams","NumOutputs","NumRules","ruleList","err.opt","err.trn","err.chk","myaccuracy","theta.L1","ekm","theta.L4","optimise","persp","rainbow","plot","axis","mtext", "polygon", "gray","lines","text","mtext","pdf","dev.off","show","tail"))
+globalVariables(c('D_x', 'D_y', 'D_out', 'genRule', 'perturb', 'NumInputs', 'Range', 'NumMFs',
+'mfParams', 'NumOutputs', 'NumRules', 'ruleList', 'err.opt', 'err.trn', 'err.chk', 'myaccuracy',
+'theta.L1', 'ekm', 'theta.L4', 'optimise', 'persp', 'rainbow', 'plot', 'axis', 'mtext', 'polygon',
+'gray', 'lines', 'text', 'mtext', 'pdf', 'dev.off', 'show', 'tail', 'OUT_COUPLE', 'pushViewport',
+'plotViewport', 'popViewport', 'RULE_CONS', 'IN_COUPLE', 'drawAnteEval', 'drawConsEval', 
+'drawRuleEval', 'viewport', 'drawRuleAggr', 'trCentroid', 'plot_it2', 'trCOS', 'iterative_method', 
+'drawAllSteps', 'rangex'))
 #end
+
+#' @import grid
+NULL
 
 
 #' Create a fis using newfis function
@@ -10,6 +20,7 @@ globalVariables(c("D_x","D_y","D_out","genRule","perturb","NumInputs","Range","N
 #'
 #' @param fisName String representing the fis name.
 #' @param fisType Type of the fis, default is 'mamdani'.
+#' @param mfType Type of membership functions, 't1' or 'it2'
 #' @param andMethod The AND method for the fis, default is 'min'.
 #' @param orMethod The OR method for the fis, default is 'max'.
 #' @param impMethod The implication method for the fis, default is 'min'.
@@ -19,15 +30,16 @@ globalVariables(c("D_x","D_y","D_out","genRule","perturb","NumInputs","Range","N
 #' @examples
 #' fis <- newfis("fisName")
 #' @export
-newfis <- function(fisName,fisType="mamdani",
-  andMethod="min", orMethod="max", impMethod="min", aggMethod="max",
-  defuzzMethod="centroid") {
-    fis <- list(name=fisName, type=fisType,
-    andMethod=andMethod, orMethod=orMethod,
-    impMethod=impMethod, aggMethod=aggMethod,
-    defuzzMethod=defuzzMethod,
-    input=NULL, output=NULL, rule=NULL)
+newfis <- function(fisName, fisType="mamdani", mfType="t1",
+andMethod="min", orMethod="max", impMethod="min", aggMethod="max",
+defuzzMethod="centroid") {
+    fis <- list(name = fisName, type = fisType, mfType = mfType,
+    andMethod = andMethod, orMethod = orMethod,
+    impMethod = impMethod, aggMethod = aggMethod,
+    defuzzMethod = defuzzMethod,
+    input = NULL, output = NULL, rule = NULL)
 }
+
 
 #' Insert a variable
 #'
@@ -56,6 +68,7 @@ addvar <- function(fis, varType, varName, varBounds, method=NULL, params=NULL) {
   fis
 }
 
+
 #' Insert a membership function.
 #'
 #' Adds a membership function to a variable of a fis object.
@@ -72,20 +85,21 @@ addvar <- function(fis, varType, varName, varBounds, method=NULL, params=NULL) {
 #' fis <- addmf(fis, 'input', 1, 'poor', 'gaussmf', c(1.5, 0))
 #' @export
 addmf <- function(fis, varType, varIndex, mfName, mfType, mfParams) {
-  if ( varType == "input" ) {
-    if ( varIndex <= length(fis$input) ) {
-      fis$input[[varIndex]]$mf <- append(fis$input[[varIndex]]$mf,
-        list(list(name=mfName, type=mfType, params=mfParams)))
+    if (varType == "input") {
+        if (varIndex <= length(fis$input)) {
+            fis$input[[varIndex]]$mf <- append(fis$input[[varIndex]]$mf,
+            list(list(name = mfName, type = mfType, params = mfParams, perturbation = NULL)))
+        }
     }
-  }
-  else {
-    if ( varIndex <= length(fis$output) ) {
-      fis$output[[varIndex]]$mf <- append(fis$output[[varIndex]]$mf,
-        list(list(name=mfName, type=mfType, params=mfParams)))
+    else {
+        if (varIndex <= length(fis$output)) {
+            fis$output[[varIndex]]$mf <- append(fis$output[[varIndex]]$mf,
+            list(list(name = mfName, type = mfType, params = mfParams, perturbation = NULL)))
+        }
     }
-  }
-  fis
+    fis
 }
+
 
 #' Inserts a rule
 #'
@@ -282,91 +296,90 @@ anfis.plotmf <- function(anfis, varType, varIndex, xx=NULL, timelimit=0, xlab=NU
 
 
 plotvar <- function(var, xx=NULL, timelimit=0, xlab=NULL, ylab=NULL, main=NULL) {
-	point_n=501
+    point_n = 501
 
-	x= seq(var$range[1], var$range[2], length=point_n)
-	x <- round(x, 4)
-	y= c(rep(0, point_n-1), 1)
-	plot_graph(x,y,title=main,xlab=xlab,ylab=ylab)
+    x = seq(var$range[1], var$range[2], length = point_n)
+    x <- round(x, 4)
+    y = c(rep(0, point_n - 1), 1)
+    plot_graph(x, y, title = main, xlab = xlab, ylab = ylab)
 
-	if (timelimit==0){
-		for ( i in 1:length(var$mf) ) {
-			y= evalmf(x, var$mf[[i]]$type, var$mf[[i]]$params)
-			if (length(y)>= (2*length(x))){
-				polygon(c(x,rev(x)), c(y[1:point_n],y[(2*point_n):(point_n+1)]),border=T,col=gray((i+2)/10))
-			} else {
-				lines(x,y,col=i,lwd=3)
-			}
+    if (timelimit == 0) {
+        for (i in 1 : length(var$mf)) {
+            y = evalmf(x, var$mf[[i]]$type, var$mf[[i]]$params)
+            if (length(y) >= (2 * length(x))) {
+                polygon(c(x, rev(x)), c(y[1 : point_n], y[(2 * point_n) : (point_n + 1)]), border = T, col = gray((i + 2) / 10))
+            } else {
+                lines(x, y, col = i, lwd = 3)
+            }
 
-			if (length(xx)>0){
-				for (j in 1:length(xx)){
-					tmp <- evalmf(xx[j], var$mf[[i]]$type, var$mf[[i]]$params)
-					lines(c(xx[j],xx[j],0),c(0,tmp[1],tmp[1]),col="red",lty="dashed");
-					lines(c(xx[j],xx[j],0),c(0,tmp[2],tmp[2]),col="red",lty="dashed");
-				}
-			}
-		}
-		for ( i in 1:length(var$mf) ) {
-			y= evalmf(x, var$mf[[i]]$type, var$mf[[i]]$params)
-			if(length(y) == point_n * 2) y <- y[1:point_n]
-			tx= which.max(y)
+            if (length(xx) > 0) {
+                for (j in 1 : length(xx)) {
+                    tmp <- evalmf(xx[j], var$mf[[i]]$type, var$mf[[i]]$params)
+                    lines(c(xx[j], xx[j], 0), c(0, tmp[1], tmp[1]), col = "red", lty = "dashed");
+                    lines(c(xx[j], xx[j], 0), c(0, tmp[2], tmp[2]), col = "red", lty = "dashed");
+                }
+            }
+        }
+        for (i in 1 : length(var$mf)) {
+            y = evalmf(x, var$mf[[i]]$type, var$mf[[i]]$params)
+            if (length(y) == point_n * 2)y <- y[1 : point_n]
+            tx = which.max(y)
 
-			if ( tx >= point_n*0.95 ) {
-				tx= x[point_n*0.95]
-			}
-			else
-			{
-				tx= x[tx + 20]
-			}
-			text(tx, 1.03-i/20, var$mf[[i]]$name, font=2, cex=.8)
-		}
-	} else if (timelimit>0){
-		posx <-c()
-		first <- TRUE
+            if (tx >= point_n * 0.95) {
+                tx = x[point_n * 0.95]
+            }
+            else
+            {
+                tx = x[tx + 20]
+            }
+            text(tx, 1.03 - i / 20, var$mf[[i]]$name, font = 2, cex = .8)
+        }
+    } else if (timelimit > 0) {
+        posx <- c()
+        first <- TRUE
 
-		for (t in 1:timelimit){
-			for ( i in 1:length(var$mf) ) {
-				repeat{
-					params <- var$mf[[i]]$params
-					e<-0
-					perturbation <- var$mf[[i]]$perturbation
-					if (length(perturbation)>0) {
-						tmp <- perturb(t,params,perturbation)
-						params <- tmp$params
-						e <- tmp$e
-					}
-					y= evalmf(x, var$mf[[i]]$type, params)+e
-					if (all(!is.nan(y))) break
-				}
-				y[y>1]=1
-				y[y<0]=0
-				if (length(y)>= (2*length(x))){
-					polygon(c(x,rev(x)), c(y[1:point_n],y[(2*point_n):(point_n+1)]),border=F,col=gray((i+2)/10))
-				} else {
-					lines(x,y,col=gray((i*2)/10))
-				}
+        for (t in 1 : timelimit) {
+            for (i in 1 : length(var$mf)) {
+                repeat{
+                    params <- var$mf[[i]]$params
+                    e <- 0
+                    perturbation <- var$mf[[i]]$perturbation
+                    if (length(perturbation) > 0) {
+                        tmp <- perturb(t, params, perturbation)
+                        params <- tmp$params
+                        e <- tmp$e
+                    }
+                    y = evalmf(x, var$mf[[i]]$type, params) + e
+                    if (all(! is.nan(y)))break
+                }
+                y[y > 1] = 1
+                y[y < 0] = 0
+                if (length(y) >= (2 * length(x))) {
+                    polygon(c(x, rev(x)), c(y[1 : point_n], y[(2 * point_n) : (point_n + 1)]), border = F, col = gray((i + 2) / 10))
+                } else {
+                    lines(x, y, col = gray((i * 2) / 10))
+                }
 
-				if (length(xx)>0){
-					for (j in 1:length(xx)){
-						tmp <- evalmf(xx[j], var$mf[[i]]$type, var$mf[[i]]$params)
-						lines(c(xx[j],xx[j],0),c(0,tmp[1],tmp[1]),col="red",lty="dashed");
-						lines(c(xx[j],xx[j],0),c(0,tmp[2],tmp[2]),col="red",lty="dashed");
-					}#end of for
-				}#end of if
-				if (first) posx[i] <- x[match(TRUE, y==max(y))+10]
-			}#end of for
-			first = FALSE;
-		}#end of for
-			for ( i in 1:length(var$mf) ) {
-				text(posx[i], 0.95, var$mf[[i]]$name,col="red",cex=.8)
-			}
-	}
+                if (length(xx) > 0) {
+                    for (j in 1 : length(xx)) {
+                        tmp <- evalmf(xx[j], var$mf[[i]]$type, var$mf[[i]]$params)
+                        lines(c(xx[j], xx[j], 0), c(0, tmp[1], tmp[1]), col = "red", lty = "dashed");
+                        lines(c(xx[j], xx[j], 0), c(0, tmp[2], tmp[2]), col = "red", lty = "dashed");
+                    }#end of for
+                }#end of if
+                if (first)posx[i] <- x[match(TRUE, y == max(y)) + 10]
+            }#end of for
+            first = FALSE;
+        }#end of for
+        for (i in 1 : length(var$mf)) {
+            text(posx[i], 0.95, var$mf[[i]]$name, col = "red", cex = .8)
+        }
+    }
 
-	if (length(xx)>0)
-
-	for (i in 1:length(xx)){
-	    mtext(paste(xx[i]),side=1,col="red",at=c(xx[i]),cex=.8);
-	}
+    if (length(xx) > 0)
+    for (i in 1 : length(xx)) {
+        mtext(paste(xx[i]), side = 1, col = "red", at = c(xx[i]), cex = .8);
+    }
 }
 
 
@@ -402,7 +415,13 @@ plot_graph <- function (x,y,xlab=NULL,ylab=NULL,title=NULL){
 }
 
 
-## @export
+#' Write a fis object to a .fis file.
+#'
+#' Write a fis object to a file with the .fis extension.
+#'
+#' @param fis The fuzzy inference system data structure to be saved.
+#' @param fileName filename
+#' @export
 writefis <- function(fis, fileName='fuzzy.fis') {
   fileText= NULL
 
@@ -780,187 +799,509 @@ showfis <- function(fis) {
   }
 }
 
+
 #' Evaluate a Fuzzy Inference System (fis)
 #'
 #' Returns an evaluated crisp value for a given fis structure.
 #'
 #' @param  input_stack A matrix representing the input stack, number of inputs (columns) by number of outputs (rows).
 #' @param  fis A fis must be provided.
+#' @param  time default 1
+#' @param  point_n number of discretised points, default 101
+#' @param  draw whether to draw, TRUE or FALSE
 #' @return Returns a matrix of evaluated values.
 #' @examples
 #' Input_data <- matrix((1:2),1,2)
 #' fis <- tipper()
 #' evalfis(Input_data, fis)
 #' @export
-evalfis <- function(input_stack, fis) {
+evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
+    first <- FALSE
+    dir = getwd()
 
-  point_n= 101
-  if ( !exists("GLOBAL_FIS") || !identical(fis, .GlobalEnv$GLOBAL_FIS) ) {
+    #to make sure there wasn't already a global fis, 
+    #or, if there was, it's not identical to the one being passed for initialisation
+    if (! exists("GLOBAL_FIS") || ! identical(fis, .GlobalEnv$GLOBAL_FIS)) {
+        first <- TRUE
 
-    # Add '.GlobalEnv$' to replace super assignment '<<-' (by Chao & Tajul)
+        # Add '.GlobalEnv$' to replace super assignment '<<-' (by Chao & Tajul)
 
-    #print("initialising ...")
-    .GlobalEnv$GLOBAL_FIS    <- fis
-    .GlobalEnv$FIS_TYPE      <- fis$type
-    .GlobalEnv$IN_N          <- length(fis$input)
-    .GlobalEnv$OUT_N         <- length(fis$output)
-    .GlobalEnv$IN_MF_N       <- NULL
-    .GlobalEnv$OUT_MF_N      <- NULL
-    for ( i in 1:.GlobalEnv$IN_N )
-      .GlobalEnv$IN_MF_N[i]  <- length(fis$input[[i]]$mf)
-    for ( i in 1:.GlobalEnv$OUT_N )
-      .GlobalEnv$OUT_MF_N[i] <- length(fis$output[[i]]$mf)
+        #Get details of fis and create matrices
+        #print("initialising ...")
+        .GlobalEnv$GLOBAL_FIS <- fis
+        .GlobalEnv$FIS_TYPE <- fis$type
+        .GlobalEnv$IN_N <- length(fis$input)
+        .GlobalEnv$OUT_N <- length(fis$output)
+        .GlobalEnv$IN_MF_N <- NULL
+        .GlobalEnv$OUT_MF_N <- NULL
+        for (i in 1 : .GlobalEnv$IN_N)
+        .GlobalEnv$IN_MF_N[i] <- length(fis$input[[i]]$mf)
+        for (i in 1 : .GlobalEnv$OUT_N)
+        .GlobalEnv$OUT_MF_N[i] <- length(fis$output[[i]]$mf)
 
-    .GlobalEnv$RULE_N        <- nrow(fis$rule)
-    .GlobalEnv$RULE_LIST     <- fis$rule[,1:(.GlobalEnv$IN_N+.GlobalEnv$OUT_N)]
-    .GlobalEnv$RULE_ANTE     <- fis$rule[,1:.GlobalEnv$IN_N]
-    .GlobalEnv$RULE_CONS     <- fis$rule[,(.GlobalEnv$IN_N+1):(.GlobalEnv$IN_N+.GlobalEnv$OUT_N)]
-    .GlobalEnv$RULE_WEIGHT   <- fis$rule[,.GlobalEnv$IN_N+.GlobalEnv$OUT_N+1]
-    .GlobalEnv$AND_OR        <- fis$rule[,.GlobalEnv$IN_N+.GlobalEnv$OUT_N+2]
-    .GlobalEnv$AND_METHOD    <- fis$andMethod
-    .GlobalEnv$OR_METHOD     <- fis$orMethod
-    .GlobalEnv$IMP_METHOD    <- fis$impMethod
-    .GlobalEnv$AGG_METHOD    <- fis$aggMethod
-    .GlobalEnv$DEFUZZ_METHOD <- fis$defuzzMethod
+        .GlobalEnv$RULE_N <- nrow(fis$rule)
+        .GlobalEnv$RULE_LIST <- fis$rule[, 1 : (.GlobalEnv$IN_N + .GlobalEnv$OUT_N)]
+        .GlobalEnv$RULE_ANTE <- fis$rule[, 1 : .GlobalEnv$IN_N]
+        .GlobalEnv$RULE_CONS <- fis$rule[, (.GlobalEnv$IN_N + 1) : (.GlobalEnv$IN_N + .GlobalEnv$OUT_N)]
+        .GlobalEnv$RULE_WEIGHT <- fis$rule[, .GlobalEnv$IN_N + .GlobalEnv$OUT_N + 1]
+        .GlobalEnv$AND_OR <- fis$rule[, .GlobalEnv$IN_N + .GlobalEnv$OUT_N + 2]
+        .GlobalEnv$OUT_MF_N_sum <- sum(.GlobalEnv$OUT_MF_N)
+        .GlobalEnv$IN_MF_N_sum <- sum(.GlobalEnv$IN_MF_N)
+        .GlobalEnv$AND_METHOD <- fis$andMethod
+        .GlobalEnv$OR_METHOD <- fis$orMethod
+        .GlobalEnv$IMP_METHOD <- fis$impMethod
+        .GlobalEnv$AGG_METHOD <- fis$aggMethod
+        .GlobalEnv$DEFUZZ_METHOD <- fis$defuzzMethod
 
-    # get input params and types into globals
-    .GlobalEnv$IN_TYPE <- NULL
-    .GlobalEnv$IN_PARAMS <- list()
+        # Get input params and types into globals
+        .GlobalEnv$IN_TYPE <- NULL
+        .GlobalEnv$IN_PARAMS <- list()
+        .GlobalEnv$IN_PERTURBATION <- list()
+        .GlobalEnv$OUT_PERTURBATION <- list()
 
-    idx= 1
-    for ( i in 1:.GlobalEnv$IN_N ) {
-      for ( j in 1:.GlobalEnv$IN_MF_N[i] ) {
-        .GlobalEnv$IN_TYPE[idx] <- fis$input[[i]]$mf[[j]]$type
-        .GlobalEnv$IN_PARAMS[idx] <- list(fis$input[[i]]$mf[[j]]$params)
-        idx= idx + 1
-      }
+        # Check to see with type of FL is being used
+        .GlobalEnv$MF_TYPE <- 1
+        .GlobalEnv$OUT_COUPLE <- 0
+        .GlobalEnv$COUPLE <- 0
+        .GlobalEnv$IN_COUPLE <- 0
+        if (fis$mfType == 'it2') {
+            .GlobalEnv$MF_TYPE <- 2
+            .GlobalEnv$OUT_COUPLE <- c(0, .GlobalEnv$OUT_MF_N_sum)
+            .GlobalEnv$COUPLE <- c(0, .GlobalEnv$RULE_N)
+            .GlobalEnv$IN_COUPLE <- c(0, .GlobalEnv$IN_MF_N_sum)
+        }
+
+        #Get the type, parameters and perturbation functions for each INPUT mf
+        idx = 1
+        for (i in 1 : .GlobalEnv$IN_N) {
+            for (j in 1 : .GlobalEnv$IN_MF_N[i]) {
+                .GlobalEnv$IN_TYPE[idx] <- fis$input[[i]]$mf[[j]]$type
+                .GlobalEnv$IN_PARAMS[idx] <- list(fis$input[[i]]$mf[[j]]$params)
+                .GlobalEnv$IN_PERTURBATION[idx] <- list(fis$input[[i]]$mf[[j]]$perturbation)
+                idx = idx + 1
+            }
+        }
+
+        #Get perturbation function for OUTPUT mfs
+        .GlobalEnv$no_output_perturbation <- TRUE
+        idx = 1
+        for (i in 1 : .GlobalEnv$OUT_N) {
+            for (j in 1 : .GlobalEnv$OUT_MF_N[i]) {
+                perturbation <- fis$output[[i]]$mf[[j]]$perturbation
+
+                #if this mf has a perturbation function set flag to FALSE
+                if (length(perturbation) > 0) {
+                    .GlobalEnv$no_output_perturbation <- FALSE
+                }
+                .GlobalEnv$OUT_PERTURBATION[idx] <- list(perturbation)
+                idx = idx + 1
+            }
+        }
+
+        #Get range of each OUTPUT mf, and create a sequence over that range
+        .GlobalEnv$OUT_RANGE <- matrix(0, .GlobalEnv$OUT_N, 2)
+        .GlobalEnv$rangex <- matrix(0, point_n, .GlobalEnv$OUT_N)
+        for (i in 1 : .GlobalEnv$OUT_N) {
+            .GlobalEnv$OUT_RANGE[i,] <- fis$output[[i]]$range
+            .GlobalEnv$rangex[, i] <- seq(.GlobalEnv$OUT_RANGE[i, 1], .GlobalEnv$OUT_RANGE[i, 2], length = point_n)
+        }
+
+        # allocate matrices for rule consequents and aggregated consequents
+        .GlobalEnv$OUT_RULE_CONS <- matrix(0, .GlobalEnv$RULE_N * .GlobalEnv$MF_TYPE, point_n * .GlobalEnv$OUT_N)
+        .GlobalEnv$OUT_RULE_AGG <- matrix(0, .GlobalEnv$MF_TYPE, point_n * .GlobalEnv$OUT_N)
     }
 
-    # compute OUT_TEMPLATE_MF: matrix (OUT_MF_N_TOTAL+1 X point_n)
-    .GlobalEnv$OUT_RANGE <- matrix(0, .GlobalEnv$OUT_N, 2)
-    .GlobalEnv$OUT_TEMPLATE_MF <- matrix(0, sum(.GlobalEnv$OUT_MF_N)+1, point_n)
+    # why first is set to be true here?
+    first <- TRUE
+    if (first ||
+        ! exists("no_output_perturbation") ||
+        ! .GlobalEnv$no_output_perturbation) {
 
-    # dont care MF
-    .GlobalEnv$OUT_TEMPLATE_MF[1,] <- 1
-    idx= 1
-    for ( i in 1:.GlobalEnv$OUT_N ) {
-      for ( j in 1:.GlobalEnv$OUT_MF_N[i] ) {
-        .GlobalEnv$OUT_RANGE[i,] <- fis$output[[i]]$range
-        .GlobalEnv$OUT_TEMPLATE_MF[idx+1,] <-
-          evalmf(seq(.GlobalEnv$OUT_RANGE[i,1], .GlobalEnv$OUT_RANGE[i,2], length=point_n),
-            fis$output[[i]]$mf[[j]]$type, fis$output[[i]]$mf[[j]]$params)
-        idx= idx + 1
-      }
+        .GlobalEnv$OUT_TEMP_MF <- matrix(0, (.GlobalEnv$OUT_MF_N_sum) * .GlobalEnv$MF_TYPE + .GlobalEnv$MF_TYPE, point_n)
+
+        .GlobalEnv$OUT_TEMP_MF[OUT_COUPLE + 1,] <- 1
+        idx = 1
+
+        for (i in 1 : .GlobalEnv$OUT_N) {
+
+            #if draw is set plot each MF in this output variable and produce a PDF
+            filename <- paste(dir, substring(fis$name, length(fis$name)), "output", i, ".pdf", sep = "")
+            if (draw && time == 1 && ! file.exists(filename)) {
+                pdf(filename)
+                pushViewport(plotViewport())
+                plotmf(fis, "output", i, xlab = tolower(fis$output[[i]]$name), main = fis$output[[i]]$name)
+                popViewport();
+                dev.off()
+            }
+
+            for (j in 1 : .GlobalEnv$OUT_MF_N[i]) {
+
+                #Get the parameters, type and perturbation function for each mf in this output var
+                params <- fis$output[[i]]$mf[[j]]$params
+                type <- fis$output[[i]]$mf[[j]]$type
+                perturbation <- .GlobalEnv$OUT_PERTURBATION[[idx]]
+
+                #If there are any perturbation functions, perturb the membership function
+                if (length(perturbation) > 0) {
+                    count <- 0
+                    repeat{
+                        tmp <- perturb(time, params, perturbation)
+                        params <- tmp$params
+                        e <- tmp$e
+                        tmp <- matrix(evalmf(.GlobalEnv$rangex[, i],
+                        type, params) + e, .GlobalEnv$MF_TYPE, point_n, byrow = TRUE)
+                        if (count > 1000 || all(! is.nan(tmp)))break
+                        count <- count + 1
+                    }
+                } else {
+                    tmp <- matrix(evalmf(.GlobalEnv$rangex[, i], type, params), .GlobalEnv$MF_TYPE, point_n, byrow = TRUE)
+                }
+                #clipping
+                tmp[tmp < 0] = 0
+                tmp[tmp > 1] = 1
+
+                #Copy perturbed mf
+                .GlobalEnv$OUT_TEMP_MF[OUT_COUPLE + idx + 1,] <- tmp
+                idx = idx + 1
+            }
+        }
+
+        # restructure to fit OUT_MF
+        idx = matrix(1, .GlobalEnv$RULE_N, 1) %*% cumsum(c(1, .GlobalEnv$OUT_MF_N[0 : (.GlobalEnv$OUT_N - 1)])) + abs(.GlobalEnv$RULE_CONS)
+        idx[RULE_CONS == 0] = 1
+
+        .GlobalEnv$OUT_MF <- .GlobalEnv$OUT_TEMP_MF[t(idx),]
+
+        #Now OUT_MF is RULE_N*OUT_N X point_n matrix
+        .GlobalEnv$OUT_MF[t(.GlobalEnv$RULE_CONS) < 0,] <- 1 - .GlobalEnv$OUT_MF[t(.GlobalEnv$RULE_CONS < 0),]
+
+        #if it's a type-2 fis,
+        if (.GlobalEnv$MF_TYPE == 2) {
+
+            idx <- idx + .GlobalEnv$OUT_MF_N_sum
+            tmp <- .GlobalEnv$OUT_TEMP_MF[t(idx),]
+
+            #Now OUT_MF is RULE_N*OUT_N X point_n matrix
+            if (any(.GlobalEnv$RULE_CONS < 0)) {
+                tt <- t(.GlobalEnv$RULE_CONS) < 0
+                tmp[tt,] <- 1 - tmp[tt,]
+                temp <- tmp[tt,]
+                tmp[tt,] <- .GlobalEnv$OUT_MF[tt,]
+                .GlobalEnv$OUT_MF[tt,] <- temp
+            }
+            .GlobalEnv$OUT_MF <- rbind(.GlobalEnv$OUT_MF, tmp)
+        }
+        .GlobalEnv$OUT_MF <- matrix(t(.GlobalEnv$OUT_MF), .GlobalEnv$RULE_N * .GlobalEnv$MF_TYPE, point_n * .GlobalEnv$OUT_N, byrow = TRUE)
+    }
+    # end of initialisation
+
+    # check for errors in the input stack
+    if (is.vector(input_stack)) {
+        #Put the inputs into seperate columns
+        input_stack = matrix(input_stack, ncol = .GlobalEnv$IN_N, byrow = TRUE)#Error here
+    }
+    data_n = nrow(input_stack)
+
+    # create output stack
+    out_stack = matrix(0, data_n * .GlobalEnv$MF_TYPE, .GlobalEnv$OUT_N)
+
+    # loop through each input
+    for (k in 1 : data_n) {
+        input = input_stack[k,]
+        # create in_temp_mf_value
+        in_temp_mf_value = matrix(0, .GlobalEnv$IN_MF_N_sum * .GlobalEnv$MF_TYPE , 1)
+
+        idx = 1
+        pr <- c()
+        for (i in 1 : .GlobalEnv$IN_N) {
+
+            #create a filename
+            filename <- paste(dir, substring(fis$name, length(fis$name)), "input", i, ".pdf", sep = "")
+
+            #if draw, create a pdf and plot this input mf
+            if (draw && time == 1 && ! file.exists(filename)) {
+                pdf(filename)
+                pushViewport(plotViewport())
+                plotmf(fis, "input", i, xlab = tolower(fis$input[[i]]$name), main = fis$input[[i]]$name)
+                popViewport()
+                dev.off()
+            }
+
+            #Create filename
+            filename <- paste(dir, substring(fis$name, length(fis$name)), "-fuzzify-input-", i, "-x=", input[i], ".pdf", sep = "")
+
+            #if draw, create pdf and plot input mf, this time alter xx 
+            if (draw && time == 1 && ! file.exists(filename)) {
+                pdf(filename)
+                pushViewport(plotViewport())
+                plotmf(fis, "input", i, xlab = tolower(fis$input[[i]]$name), main = fis$input[[i]]$name, xx = input[i])
+                popViewport()
+                dev.off()
+            }
+
+            for (j in 1 : .GlobalEnv$IN_MF_N[i]) {
+
+                #Get details of this mf
+                perturbation <- .GlobalEnv$IN_PERTURBATION[[idx]]
+                params <- .GlobalEnv$IN_PARAMS[[idx]]
+                type <- .GlobalEnv$IN_TYPE[idx]
+
+                #If there are any perturbation functions
+                if (length(perturbation) > 0) {
+                    count <- 0
+                    #Apply perturbation function
+                    repeat{
+                        tmp <- perturb(time, params, perturbation)
+                        params <- tmp$params
+                        e <- tmp$e
+                        tmp <- matrix(evalmf(input[i], type, params) + e , .GlobalEnv$MF_TYPE, 1, byrow = TRUE)
+                        if (count > 1000 || all(! is.nan(tmp)))break
+                        count <- count + 1
+                    }
+                } else {
+                    tmp <- matrix(evalmf(input[i], type, params) , .GlobalEnv$MF_TYPE, 1, byrow = TRUE)
+                }
+
+                #Tidy up
+                tmp[tmp > 1] = 1
+                tmp[tmp < 0] = 0
+
+                in_temp_mf_value[IN_COUPLE + idx,] <- tmp
+                idx = idx + 1
+            }
+        }
+
+        # restructure row of in_temp_mf_value to fit in_mf_value
+        ind = matrix(1, .GlobalEnv$RULE_N, 1) %*% cumsum(c(0, .GlobalEnv$IN_MF_N[0 : (.GlobalEnv$IN_N - 1)])) + abs(.GlobalEnv$RULE_ANTE)
+        in_mf_value = matrix(in_temp_mf_value[ind,], .GlobalEnv$RULE_N, .GlobalEnv$IN_N)
+
+        # replace dont-care MFs in AND rules with 1, and OR rules with 0
+        in_mf_value[which(((.GlobalEnv$AND_OR == 1) * (.GlobalEnv$RULE_ANTE == 0)) == 1)] = 1
+        in_mf_value[which(((.GlobalEnv$AND_OR == 2) * (.GlobalEnv$RULE_ANTE == 0)) == 1)] = 0
+
+        # sort out NOTs (negative rule indices)
+        idx = which(.GlobalEnv$RULE_ANTE < 0)
+        in_mf_value[idx] = 1 - in_mf_value[idx]
+
+        #If it's a type-2 system 
+        if (.GlobalEnv$MF_TYPE == 2) {
+            #set the ind to the total number of input mfs
+            ind <- ind + .GlobalEnv$IN_MF_N_sum
+            tmp = matrix(in_temp_mf_value[ind,], .GlobalEnv$RULE_N, .GlobalEnv$IN_N)
+
+            # replace dont-care MFs in AND rules with 1, and OR rules with 0
+            tmp[which(((.GlobalEnv$AND_OR == 1) * (.GlobalEnv$RULE_ANTE == 0)) == 1)] = 1
+            tmp[which(((.GlobalEnv$AND_OR == 2) * (.GlobalEnv$RULE_ANTE == 0)) == 1)] = 0
+
+            # take care of NOTs (negative rule indices)
+            if (length(idx) > 0) {
+                temp <- in_mf_value[idx]
+                in_mf_value[idx] = 1 - tmp[idx]
+                tmp[idx] = temp
+            }
+            in_mf_value = rbind(in_mf_value, tmp)
+        }
+
+        # Get firing strengths for the rules
+        f_str <- matrix(0, .GlobalEnv$RULE_N * .GlobalEnv$MF_TYPE, 1)
+        if (.GlobalEnv$IN_N == 1)
+        f_str = in_mf_value
+        else {
+            and_ind = which(.GlobalEnv$AND_OR == 1)
+            or_ind = which(.GlobalEnv$AND_OR == 2)
+            f_str[and_ind,] =
+            apply(rbind(in_mf_value[and_ind,]), 1, fis$andMethod)
+
+            #Check type
+            if (.GlobalEnv$MF_TYPE == 2) {
+                f_str[and_ind + .GlobalEnv$RULE_N,] =
+                apply(rbind(in_mf_value[and_ind + .GlobalEnv$RULE_N,]), 1, fis$andMethod)
+            }
+
+            f_str[or_ind,] =
+            apply(rbind(in_mf_value[or_ind,]), 1, fis$orMethod)
+
+            #Check type
+            if (.GlobalEnv$MF_TYPE == 2) {
+                f_str[or_ind + .GlobalEnv$RULE_N,] =
+                apply(rbind(in_mf_value[or_ind + .GlobalEnv$RULE_N,]), 1, fis$orMethod)
+            }
+        }
+
+        #Calculate weighted firing strength
+        f_str = f_str * .GlobalEnv$RULE_WEIGHT
+
+        if (all(f_str == 0)) {# if no rules fired,
+            for (i in 1 : .GlobalEnv$OUT_N) {
+                for (j in 1 : .GlobalEnv$MF_TYPE) {
+                    out_stack[(k - 1) * .GlobalEnv$MF_TYPE + j, i] = NaN
+                }
+            }
+        } else {
+            #Check system type and implication methods
+            if (.GlobalEnv$FIS_TYPE == 'mamdani') {
+
+                tmp = matrix(f_str, nrow(f_str), point_n * .GlobalEnv$OUT_N)
+                if (fis$impMethod == 'prod') {
+                    .GlobalEnv$OUT_RULE_CONS <- tmp * .GlobalEnv$OUT_MF
+                } else if (fis$impMethod == 'min') {
+                    .GlobalEnv$OUT_RULE_CONS <- pmin(tmp, .GlobalEnv$OUT_MF)
+                } else {
+                    cat('user-defined implication not implemented yet\n')
+                }
+
+                #IF draw and it's type-1, plot antecedents, consequents and aggregation and put them in PDFs
+                if (draw && .GlobalEnv$MF_TYPE == 1 && time == 1) {
+                    input_set <- paste(tolower(fis$input[[1]]$name), "=", input[1])
+                    for (i in 2 : .GlobalEnv$IN_N)
+                    input_set <- paste(input_set, "and", tolower(fis$input[[i]]$name), "=", input[i])
+
+                    for (i in 1 : .GlobalEnv$RULE_N) {
+                        filename <- paste(dir, substring(fis$name, length(fis$name)), "-ante-eval-", i, "-(", sep = "")
+                        s <- paste(filename, input_set, ").pdf", sep = "")
+
+                        if (time == 1 && ! file.exists(s)) {
+                            pdf(s)
+                            pushViewport(plotViewport())
+                            drawAnteEval(fis, i, input, in_mf_value[i,], point_n = point_n, title = NULL, label = TRUE)
+                            popViewport()
+                            dev.off()
+                        }
+
+                        filename <- paste(dir, substring(fis$name, length(fis$name)), "-cons-eval-", i, "-(", sep = "")
+                        s <- paste(filename, input_set, ").pdf", sep = "")
+                        if (time == 1 && ! file.exists(s)) {
+                            pdf(s)
+                            pushViewport(plotViewport())
+                            drawConsEval(fis, i, support = f_str[i,], OUT_RULE_CONS = .GlobalEnv$OUT_RULE_CONS[i,], point_n = point_n, title = NULL, label = TRUE)
+                            popViewport()
+                            dev.off()
+                        }
+
+                        filename <- paste(dir, substring(fis$name, length(fis$name)), "-rule-eval-", i, "-(", sep = "")
+                        s <- paste(filename, input_set, ").pdf", sep = "")
+                        if (time == 1 && ! file.exists(s)) {
+                            pdf(s)
+                            pushViewport(plotViewport())
+                            drawRuleEval(fis, i, input = input, in_mf_value = in_mf_value[i,], support = f_str[i,], OUT_RULE_CONS = .GlobalEnv$OUT_RULE_CONS[i,], point_n = point_n, title = NULL, label = TRUE)
+                            popViewport()
+                            dev.off()
+                        }
+                    }
+
+                    filename <- paste(dir, substring(fis$name, length(fis$name)), "-rule-evaluation-(", sep = "")
+                    s <- paste(filename, input_set, ").pdf", sep = "")
+                    if (time == 1 && ! file.exists(s)) {
+                        pdf(s)
+
+                        pushViewport(viewport(width = 0.9, height = 0.9))
+
+                        drawRuleAggr(fis, input = input, in_mf_value = in_mf_value, f_str = f_str, OUT_RULE_CONS = .GlobalEnv$OUT_RULE_CONS, point_n = point_n, title = NULL)
+                        popViewport()
+                        dev.off()
+                    }
+                }
+
+
+                # Check type and aggregate rule consequents
+                for (ii in 1 : .GlobalEnv$MF_TYPE)
+                .GlobalEnv$OUT_RULE_AGG[ii,] <- apply(.GlobalEnv$OUT_RULE_CONS[(ii - 1) * .GlobalEnv$RULE_N + (1 : .GlobalEnv$RULE_N),], 2, fis$aggMethod)
+                #perform type reduction if it's type-2
+                if (.GlobalEnv$MF_TYPE == 2) {
+                    if (fis$defuzzMethod == "centroid") {
+                        rs <- trCentroid(rbind(.GlobalEnv$rangex, .GlobalEnv$rangex), .GlobalEnv$OUT_RULE_AGG)
+
+                        #plot output mf
+                        if (draw) plot_it2(.GlobalEnv$rangex, .GlobalEnv$OUT_RULE_AGG, "Y")
+                    } else if (fis$defuzzMethod == "cos") { #Centre of Spread, for NSFS
+                        if (first ||
+                            ! exists("no_output_perturbation") ||
+                            ! .GlobalEnv$no_output_perturbation) {
+                            COS <- matrix(0, .GlobalEnv$RULE_N * 2, .GlobalEnv$OUT_N)
+                            COS <- trCentroid(rbind(.GlobalEnv$rangex, .GlobalEnv$rangex), .GlobalEnv$OUT_MF)
+                        }
+                        rs <- trCOS(COS, f_str)
+                    } else if (fis$defuzzMethod == "coh") { #Centre of Height?
+                        height <- matrix(0, .GlobalEnv$RULE_N, .GlobalEnv$OUT_N)
+                        B <- matrix(0, .GlobalEnv$RULE_N * 2, .GlobalEnv$OUT_N)
+                        sp <- matrix(0, .GlobalEnv$RULE_N, .GlobalEnv$OUT_N)
+
+                        for (i in 1 : .GlobalEnv$RULE_N) {
+                            for (j in 1 : .GlobalEnv$OUT_N) {
+                                maxp <- max(.GlobalEnv$OUT_RULE_CONS[i, (1 : point_n) + (j - 1) * point_n])
+                                height[i, j] <- mean(.GlobalEnv$rangex[which(.GlobalEnv$OUT_RULE_CONS[i, (1 : point_n) + (j - 1) * point_n] == maxp), j])
+                                tmp <- abs(.GlobalEnv$rangex[, j] - height[i, j])
+                                pos = which(tmp == min(tmp))[1]
+                                B[i, j] <- .GlobalEnv$OUT_RULE_CONS[i, pos]
+                                B[i + .GlobalEnv$RULE_N, j] <- .GlobalEnv$OUT_RULE_CONS[i + .GlobalEnv$RULE_N, pos]
+                                sp[i, j] <- (.GlobalEnv$OUT_RULE_CONS[i, pos] + .GlobalEnv$OUT_RULE_CONS[i + .GlobalEnv$RULE_N, pos]) / 2
+                            }
+                        }
+
+                        rs <- iterative_method(rbind(height, height), B)
+                    } else if (fis$defuzzMethod == "csum") { #cumulative sum?
+                        .GlobalEnv$SUMS <- matrix(0, point_n * 2, .GlobalEnv$OUT_N)
+                        for (i in 1 : .GlobalEnv$OUT_N) {
+                            for (j in 1 : point_n) {
+                                .GlobalEnv$SUMS[j, i] <- sum(.GlobalEnv$OUT_RULE_CONS[1 : .GlobalEnv$RULE_N, (i - 1) * point_n + j])
+                                .GlobalEnv$SUMS[j + point_n, i] <- sum(.GlobalEnv$OUT_RULE_CONS[(1 + .GlobalEnv$RULE_N) : (.GlobalEnv$RULE_N + .GlobalEnv$RULE_N), (i - 1) * point_n + j])
+                            }
+                        }
+                        rs <- iterative_method(rbind(.GlobalEnv$rangex, .GlobalEnv$rangex), .GlobalEnv$SUMS)
+                    } else if (fis$defuzzMethod == "user") {   #User defined
+                        rs <- iterative_method(matrix(.GlobalEnv$OUT_MF[, 1], 50, 1), f_str)
+                    }
+
+                    # defuzzify each output
+                    for (i in 1 : .GlobalEnv$OUT_N) {
+                        out_stack[2 * k - 1, i] = mean(rs[, i])
+                        out_stack[2 * k, i] = rs[1, i] - mean(rs[, i])
+                    }
+                } else {
+
+                    # defuzzify each output
+                    for (i in 1 : .GlobalEnv$OUT_N) {
+
+                        out_stack[k, i] =
+                        defuzz(.GlobalEnv$rangex[, i],
+                        .GlobalEnv$OUT_RULE_AGG[1, ((i - 1) * point_n + 1) : (i * point_n)], fis$defuzzMethod)
+                        # add by Tajul, and modified by Chao
+                        .GlobalEnv$D_x <- .GlobalEnv$rangex[, i]
+                        .GlobalEnv$D_y <- .GlobalEnv$OUT_RULE_AGG[1, ((i - 1) * point_n + 1) : (i * point_n)]
+                        # end
+                    }
+
+                    if (draw) {
+                        filename <- paste(dir, substring(fis$name, length(fis$name)), "-all-evaluations-(", sep = "")
+                        s <- paste(filename, input_set, ").pdf", sep = "")
+                    }
+                    if (draw && time == 1 && ! file.exists(filename)) {
+                        #pdf(s)
+                        pushViewport(viewport(width = 0.9, height = 0.9))
+                        drawAllSteps(fis, input = input, in_mf_value = in_mf_value, f_str = f_str, OUT_RULE_CONS = .GlobalEnv$OUT_RULE_CONS,
+                        OUT_RULE_AGG = .GlobalEnv$OUT_RULE_AGG, output = out_stack[k,], point_n = point_n, title = NULL)
+                        popViewport()
+                        #dev.off()
+                    }
+                }
+            }
+            else if (.GlobalEnv$FIS_TYPE == 'sugeno')
+            {
+                cat('sugeno inference not implemented yet\n')
+            }
+            else {
+                cat('unknown inference type\n')
+            }
+        }#end of if
     }
 
-    # reorder to fill OUT_MF, an (RULE_N X point_n*OUT_N) matrix
-    idx= abs(.GlobalEnv$RULE_CONS)+matrix((0:(.GlobalEnv$OUT_N-1))*.GlobalEnv$RULE_N+1, .GlobalEnv$RULE_N, .GlobalEnv$OUT_N, byrow=TRUE)
-    idx[.GlobalEnv$RULE_CONS==0]= 1
-    .GlobalEnv$OUT_MF <- .GlobalEnv$OUT_TEMPLATE_MF[t(idx),]
-    .GlobalEnv$OUT_MF[t(.GlobalEnv$RULE_CONS)<0,] <- 1 - .GlobalEnv$OUT_MF[t(.GlobalEnv$RULE_CONS<0)]
-    .GlobalEnv$OUT_MF <- matrix(t(.GlobalEnv$OUT_MF), .GlobalEnv$RULE_N, point_n*.GlobalEnv$OUT_N, byrow=TRUE)
+    # add by Tajul
+    .GlobalEnv$D_out <- round(out_stack, 2)
+    #end
 
-    # allocate other matrices
-    .GlobalEnv$QUALIFIED_OUT_MF <- matrix(0, .GlobalEnv$RULE_N, point_n*.GlobalEnv$OUT_N)
-    .GlobalEnv$OVERALL_OUT_MF <- matrix(0, point_n*.GlobalEnv$OUT_N)
-  }
-  # end of initialisation
-
-  # error checking for input stack
-  if ( is.vector(input_stack) ) {
-    input_stack= rbind(input_stack)
-  }
-  data_n= nrow(input_stack)
-
-  # allocate output stack
-  output_stack= matrix(0, data_n, .GlobalEnv$OUT_N)
-
-  # iteration through each row of input stack
-  for ( kkk in 1:data_n ) {
-    input= input_stack[kkk,]
-
-    # get in_template_mf_value, a value for each MF
-    in_template_mf_value= rep(0, sum(.GlobalEnv$IN_MF_N))
-    idx= 1
-    for ( i in 1:.GlobalEnv$IN_N ) {
-      for ( j in 1:.GlobalEnv$IN_MF_N[i] ) {
-        in_template_mf_value[idx]=
-          evalmf(input[i], .GlobalEnv$IN_TYPE[idx], .GlobalEnv$IN_PARAMS[[idx]])
-        idx= idx + 1
-      }
-    }
-    # add a leading zero: (fixes problem with missing rules clauses in first rule)
-    in_template_mf_value= c(0, in_template_mf_value)
-
-    # reordering to get in_mf_value, a (RULE_N X .GlobalEnv$IN_N) matrix
-    index= matrix(1, .GlobalEnv$RULE_N, 1) %*% cumsum(c(0, .GlobalEnv$IN_MF_N[1:(.GlobalEnv$IN_N-1)])) + abs(.GlobalEnv$RULE_ANTE) + 1
-    in_mf_value= matrix(in_template_mf_value[index], .GlobalEnv$RULE_N, .GlobalEnv$IN_N)
-
-    # replace dont-care MFs in AND rules with 1, and OR rules with 0
-    in_mf_value[which(((.GlobalEnv$AND_OR == 1) * (.GlobalEnv$RULE_ANTE == 0)) == 1)]= 1
-    in_mf_value[which(((.GlobalEnv$AND_OR == 2) * (.GlobalEnv$RULE_ANTE == 0)) == 1)]= 0
-
-    # take care of NOTs (negative rule indices)
-    idx= which(.GlobalEnv$RULE_ANTE < 0)
-    in_mf_value[idx]= 1 - in_mf_value[idx]
-
-    #cat(in_mf_value, '\n')
-
-    # find firing strengths of rules
-    firing_strength= matrix(0, .GlobalEnv$RULE_N, 1)
-    if ( .GlobalEnv$IN_N == 1 )
-      firing_strength= in_mf_value
-    else {
-      and_index= which(.GlobalEnv$AND_OR == 1)
-      or_index= which(.GlobalEnv$AND_OR == 2)
-      firing_strength[and_index]=
-        apply(rbind(in_mf_value[and_index,]), 1, .GlobalEnv$AND_METHOD)
-      firing_strength[or_index]=
-        apply(rbind(in_mf_value[or_index,]), 1, .GlobalEnv$OR_METHOD)
-    }
-
-    firing_strength= firing_strength * .GlobalEnv$RULE_WEIGHT
-    # cat(firing_strength, '\n')
-
-    if ( .GlobalEnv$FIS_TYPE == 'mamdani' )
-    {
-      # transform OUT_MF to OUT_QUALIFIED_MF
-      tmp= matrix(firing_strength, nrow(firing_strength), point_n*.GlobalEnv$OUT_N)
-      if ( .GlobalEnv$IMP_METHOD == 'prod' ) {
-        .GlobalEnv$QUALIFIED_OUT_MF <- tmp * .GlobalEnv$OUT_MF
-      } else if ( .GlobalEnv$IMP_METHOD == 'min' ) {
-        .GlobalEnv$QUALIFIED_OUT_MF <- pmin(tmp, .GlobalEnv$OUT_MF)
-      } else {
-        cat('user-defined implication not implemented yet\n')
-      }
-
-      # aggregation: 'sum', 'max', 'probor' or user-defined
-      .GlobalEnv$OVERALL_OUT_MF <- apply(.GlobalEnv$QUALIFIED_OUT_MF, 2, .GlobalEnv$AGG_METHOD)
-
-      # defuzzify each output
-      for ( i in 1:.GlobalEnv$OUT_N ) {
-        output_stack[kkk, i]=
-          defuzz(seq(.GlobalEnv$OUT_RANGE[i, 1], .GlobalEnv$OUT_RANGE[i, 2], length=point_n),
-            .GlobalEnv$OVERALL_OUT_MF[((i-1)*point_n+1):(i*point_n)], .GlobalEnv$DEFUZZ_METHOD)
-        # add by Tajul
-        .GlobalEnv$D_x <- seq(.GlobalEnv$OUT_RANGE[i, 1], .GlobalEnv$OUT_RANGE[i, 2], length=point_n)
-        .GlobalEnv$D_y <- .GlobalEnv$OVERALL_OUT_MF[((i-1)*point_n+1):(i*point_n)]
-        # end
-      }
-    }
-    else if ( .GlobalEnv$FIS_TYPE == 'sugeno' )
-    {
-      cat('sugeno inference not implemented yet\n')
-    }
-    else {
-      cat('unknown inference type\n')
-    }
-  }
-  # add by Tajul
-  .GlobalEnv$D_out <- round(output_stack,2)
-  #end
-  output_stack
+    out_stack
 }
+
 
 #' Defuzzify a set of values.
 #'
@@ -1088,31 +1429,27 @@ fis.builder <- function(x.range, input.num, input.mf.num, input.mf.type, rule.nu
 #' fis <- tipper()
 #' @export
 tipper <- function() {
-  fis= newfis('tipper')
+    fis = newfis('tipper')
+    fis = addvar(fis, 'input', 'service', c(0, 10))
+    fis = addvar(fis, 'input', 'food', c(0, 10))
+    fis = addvar(fis, 'output', 'tip', c(0, 30))
 
-  fis= addvar(fis, 'input', 'service', c(0, 10))
-  fis= addvar(fis, 'input', 'food', c(0, 10))
-  fis= addvar(fis, 'output', 'tip', c(0, 30))
+    fis = addmf(fis, 'input', 1, 'poor', 'gaussmf', c(1.5, 0, 1))
+    fis = addmf(fis, 'input', 1, 'good', 'gaussmf', c(1.5, 5, 1))
+    fis = addmf(fis, 'input', 1, 'excellent', 'gaussmf', c(1.5, 10, 1))
 
+    fis = addmf(fis, 'input', 2, 'rancid', 'trapmf', c(0, 0, 1, 3, 1))
+    fis = addmf(fis, 'input', 2, 'delicious', 'trapmf', c(7, 9, 10, 10, 1))
 
-  fis= addmf(fis, 'input', 1, 'poor', 'gaussmf', c(1.5, 0))
-  fis= addmf(fis, 'input', 1, 'good', 'gaussmf', c(1.5, 5))
-  fis= addmf(fis, 'input', 1, 'excellent', 'gaussmf', c(1.5, 10))
+    fis = addmf(fis, 'output', 1, 'cheap', 'trimf', c(0, 5, 10, 1))
+    fis = addmf(fis, 'output', 1, 'average', 'trimf', c(10, 15, 20, 1))
+    fis = addmf(fis, 'output', 1, 'generous', 'trimf', c(20, 25, 30, 1))
 
-  fis= addmf(fis, 'input', 2, 'rancid', 'trapmf', c(0, 0, 1, 3))
-  fis= addmf(fis, 'input', 2, 'delicious', 'trapmf', c(7, 9, 10, 10))
-
-  fis= addmf(fis, 'output', 1, 'cheap', 'trimf', c(0, 5, 10))
-  fis= addmf(fis, 'output', 1, 'average', 'trimf', c(10, 15, 20))
-  fis= addmf(fis, 'output', 1, 'generous', 'trimf', c(20, 25, 30))
-
-
-
-  rl = rbind(c(1,1,1,1,2), c(2,0,2,1,1), c(3,2,3,1,2))
-  fis= addrule(fis, rl)
-
-  fis
+    rl = rbind(c(1, 1, 1, 1, 2), c(2, 0, 2, 1, 1), c(3, 2, 3, 1, 2))
+    fis = addrule(fis, rl)
+    fis
 }
+
 
 # testing
 #' Produces an example fis object which can be used for ANFIS.
@@ -1124,51 +1461,80 @@ tipper <- function() {
 #' fis <- anfis.tipper()
 #' @export
 anfis.tipper <- function() {
-  fis= newfis('tipper', fisType="tsk", andMethod="prod", orMethod="max", impMethod="min", aggMethod="max")
+    fis = newfis('tipper', fisType = 'tsk', andMethod = 'prod', orMethod = 'max', impMethod = 'min', aggMethod = 'max')
 
-  fis= addvar(fis, 'input', 'service', c(0, 10), 'singleton.fuzzification')
-  #fis= addvar(fis, 'input', 'service', c(0, 10), 'it2gbell.fuzzification', c(1,2,3))
+    fis = addvar(fis, 'input', 'service', c(0, 10), 'singleton.fuzzification')
+    #fis= addvar(fis, 'input', 'service', c(0, 10), 'it2gbell.fuzzification', c(1,2,3))
 
-  fis= addvar(fis, 'input', 'food', c(0, 15), 'singleton.fuzzification')
-  #fis= addvar(fis, 'input', 'food', c(0, 15), 'it2gbell.fuzzification', c(1,2,3))
+    fis = addvar(fis, 'input', 'food', c(0, 15), 'singleton.fuzzification')
+    #fis= addvar(fis, 'input', 'food', c(0, 15), 'it2gbell.fuzzification', c(1,2,3))
 
-  fis= addvar(fis, 'output', 'tip', c(0, 30), 'defuzzification.method', c(1,2,3))
-  #fis= addvar(fis, 'output', 'test', c(0, 100))
+    fis = addvar(fis, 'output', 'tip', c(0, 30), 'defuzzification.method', c(1, 2, 3))
+    #fis= addvar(fis, 'output', 'test', c(0, 100))
 
-  fis= addmf(fis, 'input', 1, 'poor', 'gbellmf', c(1, 1.5, 3))
+    fis = addmf(fis, 'input', 1, 'poor', 'gbellmf', c(1, 1.5, 3))
 
-  fis= addmf(fis, 'input', 1, 'good', 'gbellmf', c(1, 1.5, 5))
-  #fis= addmf(fis, 'input', 1, 'good', 'it2gbellmf', c(1, 2, 1.5, 5))
+    fis = addmf(fis, 'input', 1, 'good', 'gbellmf', c(1, 1.5, 5))
+    #fis= addmf(fis, 'input', 1, 'good', 'it2gbellmf', c(1, 2, 1.5, 5))
 
-  fis= addmf(fis, 'input', 1, 'excellent', 'gbellmf', c(2, 1.5, 10))
-  #fis= addmf(fis, 'input', 1, 'excellent', 'it2gbellmf', c(1, 2, 1.5, 10))
+    fis = addmf(fis, 'input', 1, 'excellent', 'gbellmf', c(2, 1.5, 10))
+    #fis= addmf(fis, 'input', 1, 'excellent', 'it2gbellmf', c(1, 2, 1.5, 10))
 
-  fis= addmf(fis, 'input', 2, 'rancid', 'gbellmf', c(1, 2, 3))
-  #fis= addmf(fis, 'input', 2, 'rancid', 'it2gbellmf', c(1, 2, 2, 3))
+    fis = addmf(fis, 'input', 2, 'rancid', 'gbellmf', c(1, 2, 3))
+    #fis= addmf(fis, 'input', 2, 'rancid', 'it2gbellmf', c(1, 2, 2, 3))
 
-  fis= addmf(fis, 'input', 2, 'delicious', 'gbellmf', c(4, 10, 10))
-  #fis= addmf(fis, 'input', 2, 'delicious', 'it2gbellmf', c(3, 4, 10, 10))
+    fis = addmf(fis, 'input', 2, 'delicious', 'gbellmf', c(4, 10, 10))
+    #fis= addmf(fis, 'input', 2, 'delicious', 'it2gbellmf', c(3, 4, 10, 10))
 
-  fis= addmf(fis, 'output', 1, 'cheap', 'linearmf', c(1, 5, 10))
-  fis= addmf(fis, 'output', 1, 'average', 'linearmf', c(10, 15, 20))
-  fis= addmf(fis, 'output', 1, 'generous', 'linearmf', c(20, 25, 30))
-  #fis= addmf(fis, 'output', 1, 'generous', 'itlinearmf', c(10, 20, 25, 30))
+    fis = addmf(fis, 'output', 1, 'cheap', 'linearmf', c(1, 5, 10))
+    fis = addmf(fis, 'output', 1, 'average', 'linearmf', c(10, 15, 20))
+    fis = addmf(fis, 'output', 1, 'generous', 'linearmf', c(20, 25, 30))
+    #fis= addmf(fis, 'output', 1, 'generous', 'itlinearmf', c(10, 20, 25, 30))
 
-  #fis= addmf(fis, 'output', 2, 'l', 'trimf', c(0, 0, 50))
-  #fis= addmf(fis, 'output', 2, 'm', 'trimf', c(0, 50, 100))
-  #fis= addmf(fis, 'output', 2, 'h', 'trimf', c(50, 100, 100))
+    #fis= addmf(fis, 'output', 2, 'l', 'trimf', c(0, 0, 50))
+    #fis= addmf(fis, 'output', 2, 'm', 'trimf', c(0, 50, 100))
+    #fis= addmf(fis, 'output', 2, 'h', 'trimf', c(50, 100, 100))
 
-  rl = rbind(c(1,1,1,1,1), c(2,0,2,1,1), c(3,2,3,1,1))
-  #rl = rbind(c(1,1,1,1,1,2), c(2,0,2,2,1,1), c(3,2,3,3,1,2))
-  fis= addrule(fis, rl)
+    rl = rbind(c(1, 1, 1, 1, 1), c(2, 0, 2, 1, 1), c(3, 2, 3, 1, 1))
+    #rl = rbind(c(1,1,1,1,1,2), c(2,0,2,2,1,1), c(3,2,3,3,1,2))
+    fis = addrule(fis, rl)
 
-  fis
+    fis
 }
 
-#fis <- tipper()
-#fis <- write('tipper.fis')
-#fis <- readfis('tipper.fis')
-#showfis(fis)
+
+#' Produces an example it2fis object for Waiter-Tipping.
+#'
+#' A function used primarily for example purposes, it creates a it2 fis with two input (service & food), output variables (tip) and their membership functions.
+#'
+#' @return A fis is return
+#' @examples
+#' it2fis <- it2tipper()
+#' @export
+it2tipper <- function() {
+
+    fis = newfis('tipper')
+
+    fis = addvar(fis, 'input', 'service', c(0, 10), 'singleton.fuzzification')
+    fis = addvar(fis, 'input', 'food', c(0, 15), 'it2gbell.fuzzification', c(1, 2, 3))
+    fis = addvar(fis, 'output', 'tip', c(0, 30), 'defuzzification.method')
+
+    fis = addmf(fis, 'input', 1, 'poor', 'it2gbellmf', c(1, 2, 1.5, 0, 1, 1))
+    fis = addmf(fis, 'input', 1, 'good', 'it2gbellmf', c(1, 2, 1.5, 5, 1, 1))
+    fis = addmf(fis, 'input', 1, 'excellent', 'it2gbellmf', c(1, 2, 1.5, 10, 1, 1))
+
+    fis = addmf(fis, 'input', 2, 'rancid', 'it2gbellmf', c(1, 2, 2, 3, 1, 1))
+    fis = addmf(fis, 'input', 2, 'delicious', 'it2gbellmf', c(1, 2, 2, 12, 1, 1))
+
+    fis = addmf(fis, 'output', 1, 'cheap', 'it2trimf', c(3, 7.5, 12, 0, 7.5, 15, 0.8, 1))
+    fis = addmf(fis, 'output', 1, 'average', 'it2trimf', c(10.5, 15, 19.5, 7.5, 15, 22.5, 0.8, 1))
+    fis = addmf(fis, 'output', 1, 'generous', 'it2trimf', c(18, 22.5, 27, 15, 22.5, 30, 0.8, 1))
+
+    rl = rbind(c(1, 1, 1, 1, 2), c(2, 0, 2, 1, 1), c(3, 2, 3, 1, 2))
+    fis = addrule(fis, rl)
+
+    fis
+}
 
 
 #' Graphic User Interface for Waiter-Tipping

@@ -26,4 +26,3 @@ evalmftype(1:10, mf.type=gbellmf, mf.params=c(1,2,3))
 \author{
 Chao Chen
 }
-

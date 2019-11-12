@@ -15,7 +15,11 @@ NULL
 #' anfis <- anfis.builder(fis)
 #' @author Chao Chen
 #' @references
-#' An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models \url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
+#' [1] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models,” in Proceedings IEEE International Conference on Fuzzy Systems, 2016, pp. 602–609. \cr
+#' \url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
+#'
+#' [2] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “Type-1 and interval type-2 ANFIS: a comparison,” in Proceedings IEEE International Conference on Fuzzy Systems, 2017, pp. 1–6.  \cr
+#' \url{https://doi.org/10.1109/FUZZ-IEEE.2017.8015555}
 #' @export
 
 anfis.builder <- function(fis) {
@@ -212,6 +216,7 @@ anfis.eval <- function(anfis, input.stack) {
 #' @param online 0 -- batch; 1 -- online; 2 -- semi-online
 #' @param lambda The forgetting rate for the LSE algorithm
 #' @param opt.by To optimise the ANFIS model by: err.opt -- optimisation error; err.trn -- training error; err.chk -- checking (validation) error.
+#' @param err.trn.fix T or F. When KM defuzzification is used for IT2 ANFIS, err.trn is not equal to err.opt. Hence, this flag is used for users to choose whether to fix this issue. The default value is set to T for the compatibility with previous built IT2 models. For T1 ANFIS, this flag can be set to F for speed improvement.
 #' @return The optimised ANFIS model.
 #' @examples
 #' fis <- anfis.tipper()
@@ -226,10 +231,14 @@ anfis.eval <- function(anfis, input.stack) {
 #'                                  stepsize=0.01, rate.inc=1.1, rate.dec=0.9)
 #' @author Chao Chen
 #' @references
-#' An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models \url{http://eprints.nottingham.ac.uk/33465/}
+#' [1] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models,” in Proceedings IEEE International Conference on Fuzzy Systems, 2016, pp. 602–609. \cr
+#' \url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
+#'
+#' [2] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “Type-1 and interval type-2 ANFIS: a comparison,” in Proceedings IEEE International Conference on Fuzzy Systems, 2017, pp. 1–6.  \cr
+#' \url{https://doi.org/10.1109/FUZZ-IEEE.2017.8015555}
 #' @export
 
-anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, stepsize=0.1, rate.inc=1.1, rate.dec=0.9, method=c("gradient", "lse"), err.log=F, online=0, lambda=1, opt.by="err.opt") {
+anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, stepsize=0.1, rate.inc=1.1, rate.dec=0.9, method=c("gradient", "lse"), err.log=F, online=0, lambda=1, opt.by="err.opt", err.trn.fix=T) {
 
     LI <- 1
     L1 <- 1 + 1
@@ -338,7 +347,9 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
                 err.tmp <- fuzzyr.accuracy(anfis.output, data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
                 .GlobalEnv$err.opt[epoch,] <- err.tmp
 
-                err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.trn[,1:input.num]), data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
+                if(err.trn.fix) {
+                    err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.trn[,1:input.num]), data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
+                }
                 .GlobalEnv$err.trn[epoch,] <- err.tmp
 
                 if(!is.null(data.chk)) {
@@ -365,8 +376,12 @@ anfis.optimise <- function(anfis, data.trn, data.chk=NULL, epoch.total=100, step
                 if(err.log) {
                     err.epoch <- .GlobalEnv$err.trn[epoch,2]
                 } else {
-                    err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.trn[,1:input.num]), data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
-                    err.epoch <- err.tmp[2]
+                    if(err.trn.fix) {
+                        err.tmp <- fuzzyr.accuracy(anfis.eval(anfis, data.trn[,1:input.num]), data.trn[,(input.num+1)], data.trn[,input.num], scale.mase)
+                        err.epoch <- err.tmp[2]
+                    } else {
+                        err.epoch <- err.opt.rmse
+                    }
                 }
             } else if (opt.by == "err.chk") {
                 if(err.log) {
@@ -1008,9 +1023,11 @@ anfis.dO3.dO2 <- function(anfis, output.L2, output.L2.which) {
                     # output.L2.sum[[k]]^2 may be zero if output.L2.sum[[k]] is too small
                     #tmp <- (output.L2.sum[[k]] - output.L2.w[[k]][,i]) / output.L2.sum[[k]]^2
                     tmp <- (output.L2.sum[[k]] - output.L2.w[[k]][,i]) / output.L2.sum[[k]] / output.L2.sum[[k]]
+                    tmp[is.nan(tmp)] = 1/node.num
                 } else {
                     #tmp <- -output.L2.w[[k]][,j] / output.L2.sum[[k]]^2
                     tmp <- -output.L2.w[[k]][,j] / output.L2.sum[[k]] / output.L2.sum[[k]]
+                    tmp[is.nan(tmp)] = 1/node.num
                 }
                 do3.do2.tmp.j <- append(do3.do2.tmp.j, list(c(tmp) * output.L2.which[[k]][[i]]))
             }

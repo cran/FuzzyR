@@ -27,4 +27,3 @@ fis <- showGUI(fis)
 \author{
 Tajul Razak
 }
-

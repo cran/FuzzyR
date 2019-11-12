@@ -4,12 +4,18 @@
 \alias{evalfis}
 \title{Evaluate a Fuzzy Inference System (fis)}
 \usage{
-evalfis(input_stack, fis)
+evalfis(input_stack, fis, time = 1, point_n = 101, draw = FALSE)
 }
 \arguments{
 \item{input_stack}{A matrix representing the input stack, number of inputs (columns) by number of outputs (rows).}
 
 \item{fis}{A fis must be provided.}
+
+\item{time}{default 1}
+
+\item{point_n}{number of discretised points, default 101}
+
+\item{draw}{whether to draw, TRUE or FALSE}
 }
 \value{
 Returns a matrix of evaluated values.
@@ -22,4 +28,3 @@ Input_data <- matrix((1:2),1,2)
 fis <- tipper()
 evalfis(Input_data, fis)
 }
-

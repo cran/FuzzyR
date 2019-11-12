@@ -18,4 +18,3 @@ fis <- tipperGUI2()
 \author{
 Tajul Razak
 }
-

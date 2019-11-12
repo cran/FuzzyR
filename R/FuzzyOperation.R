@@ -208,18 +208,20 @@ ekm <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
     wr.which <- rep(TRUE, length(wr))
     k <- NULL
 
-    #if(identical(wl, wr) && length(unique(wl)) == 1) {
+    s1 = sum(wl)
     if(identical(wl, wr)) {
-        #y <- mean(f)
-        y <- sum(wl * f) / sum(wl)
-    } else if(sum(wl) == 0) {
-        if(maximum) {
-            y <- max(f)
-            wr.which[-which.max(f)] = FALSE
+        if(s1 != 0) {
+            y <- wl %*% f / s1
         } else {
-            y <- min(f)
-            wr.which[-which.min(f)] = FALSE
+            y <- mean(f)
         }
+    } else if(s1 == 0) {
+        if(maximum) {
+            y <- max(f[wr!=0])
+        } else {
+            y <- min(f[wr!=0])
+        }
+        wr.which[-which(f==y)] = FALSE
     }
 
     if(is.null(y)) {
@@ -255,17 +257,19 @@ ekm <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
             a <- w %*% f
             b <- sum(w)
             y <- as.numeric(a / b)
-            ## The following 'complicated' operation is because the precision of R is terrible!
+            ## The following 'complicated' operation is because the precision limit of R or CPU!
             ## This may lead to wrong results! We suggest an alternative function km.da.
-            ## In fact, y should be within [min(f), max(f)], but R does not give this fact!
+            ## In fact, y should be within [min(f), max(f)], but R does not give this fact in some case!
             #k.tmp <- if(sum(round(f,15) >= round(y,15)) != 0) which.max(round(f,15) >= round(y,15)) else n
-            k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
-            k.new <- if(k.tmp > 1) k.tmp - 1 else 1
+#            k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
+#            k.new <- if(k.tmp > 1) k.tmp - 1 else 1
+            k.new <- length(which(f<=y))
+            if(k.new == n) k.new <- n - 1
             k.hist <- k
 
-            counter <- 1
+#            cnt <- 1
             while(k.new != k && !(k.new %in% k.hist)) {
-                counter <- counter + 1
+#                cnt <- cnt + 1
                 s <- sign(k.new - k)
 
                 idx <- (min(k, k.new) + 1) : max(k, k.new)
@@ -277,10 +281,13 @@ ekm <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
                 k <- k.new
                 k.hist <- c(k.hist, k)
                 #k.tmp <- if(sum(round(f,15) >= round(y,15)) != 0) which.max(round(f,15) >= round(y,15)) else n
-                k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
-                k.new <- if(k.tmp > 1) k.tmp - 1 else 1
+#                k.tmp <- which.max(round(f,15) > round(y,15) - 2^-50)
+#                k.new <- if(k.tmp > 1) k.tmp - 1 else 1
+                k.new <- length(which(f<y+2^-50))
+                if(k.new == n) k.new <- n - 1
             }
-            #cat("counter:", counter, "\n")
+#            cat("cnt:", cnt, "\n")
+#            cat("k.hist: [", k.hist, "]\n")
             #cat("k: ", k, "\n")
 
             if(maximum) {
@@ -326,7 +333,11 @@ ekm <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
 #' km.da(wl, wr, f)
 #' @author Chao Chen
 #' @references
-#' A Direct Approach for Determining the Switch Points in the Karnik-Mendel Algorithm.
+#' [1] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “A Direct Approach for Determining the Switch Points in the Karnik–Mendel Algorithm,” IEEE Transactions on Fuzzy Systems, vol. 26, no. 2, pp. 1079–1085, Apr. 2018. \cr
+#' \url{https://doi.org/10.1109/TFUZZ.2017.2699168}
+#'
+#' [2] C. Chen, D. Wu, J. M. Garibaldi, R. John, J. Twycross, and J. M. Mendel, “A Comment on ‘A Direct Approach for Determining the Switch Points in the Karnik-Mendel Algorithm,’” IEEE Transactions on Fuzzy Systems, vol. 26, no. 6, pp. 3905–3907, 2018. \cr
+#' \url{https://doi.org/10.1109/TFUZZ.2018.2865134}
 #' @export
 
 km.da <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
@@ -341,18 +352,20 @@ km.da <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
     wr.which <- rep(TRUE, length(wr))
     k <- NULL
 
-    #if(identical(wl, wr) && length(unique(wl)) == 1) {
+    s1 = sum(wl)
     if(identical(wl, wr)) {
-        #y <- mean(f)
-        y <- sum(wl * f) / sum(wl)
-    } else if(sum(wl) == 0) {
-        if(maximum) {
-            y <- max(f)
-            wr.which[-which.max(f)] = FALSE
+        if(s1 != 0) {
+            y <- wl %*% f / s1
         } else {
-            y <- min(f)
-            wr.which[-which.min(f)] = FALSE
+            y <- mean(f)
         }
+    } else if(s1 == 0) {
+        if(maximum) {
+            y <- max(f[wr!=0])
+        } else {
+            y <- min(f[wr!=0])
+        }
+        wr.which[-which(f==y)] = FALSE
     }
 
     if(is.null(y)) {
@@ -394,6 +407,7 @@ km.da <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
             #k <- which.max(derivatives>=0)-1
             #k <- sum(derivatives<0)
             k <- length(which(derivatives<0))
+            if(k == 0) k = 1
 
             if(maximum) {
                 w <- c(wl[1:k], wr[(k+1):n])
@@ -423,7 +437,8 @@ km.da <- function(wl, wr, f, maximum=F, w.which=F, sorted=F, k.which=F) {
         if(k.which) {
             c(y, k) 
         } else {
-            y
+            c(y)
         }
     }
 }
+

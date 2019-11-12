@@ -34,4 +34,3 @@ Plots a 2D graph of all membership functions from the specified variable which m
 fis <- tipper()
 plotmf(fis, "input", 1)
 }
-

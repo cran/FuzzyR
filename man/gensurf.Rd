@@ -25,4 +25,3 @@ Produces a three dimensional graphical view of a specific fis object. This funct
 fis <- tipper()
 gensurf(fis)
 }
-

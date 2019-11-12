@@ -44,4 +44,3 @@ anfis.final <- anfis.optimise(anfis, data.trn, epoch.total=500,
 anfis.plotmf(anfis, 'input', 1)
 anfis.plotmf(anfis.final, 'input', 1)
 }
-

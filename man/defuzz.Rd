@@ -22,4 +22,3 @@ Defuzzifies a given set of values using a specified range and defuzzification ty
 \examples{
 Crisp_value = defuzz(1:10, c(1.5, 5), "centroid")
 }
-

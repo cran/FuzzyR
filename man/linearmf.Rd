@@ -18,4 +18,3 @@ To specify a 1st order linear membership function with given parameters
 \author{
 Chao Chen
 }
-

@@ -94,11 +94,11 @@ evalmf <- function(...) {
 }
 
 
-#' @title Gaussian bell membership function
+#' @title Generalised bell membership function
 #' @description
-#' To specify a gaussian bell membership function with a pair of particular parameters
-#' @param mf.params The parameters c(a, b, c) for a gaussian bell membership function
-#' @return The gaussian bell membership function of x for a given pair of parameters,
+#' To specify a generalised bell membership function with a pair of particular parameters
+#' @param mf.params The parameters c(a, b, c) for a generalised bell membership function
+#' @return The generalised bell membership function of x for a given pair of parameters,
 #' where x is a generic element of U, which is the universe of discourse of a fuzzy set X
 #' @details
 #' This is not an external function. It should be used through \code{\link{genmf}}.
@@ -113,25 +113,31 @@ evalmf <- function(...) {
 
 gbellmf <- function(mf.params) {
 
-    if(length(mf.params) != 3) {
-        stop("improper parameters for gaussian bell membership function")
+    if(length(mf.params) != 3 && length(mf.params) != 4) {
+        stop("improper parameters for generalised bell membership function")
     }
 
     a <- mf.params[1]
     b <- mf.params[2]
     c <- mf.params[3]
 
+    if (length(mf.params) == 4) {
+        h <- mf.params[4]
+    } else {
+        h <- 1
+    }
+
     gbellmf <- function(x) {
-        1 / ( 1 + (((x - c)/a)^2)^b)
+        h / ( 1 + (((x - c)/a)^2)^b)
     }
 }
 
 
-#' @title Gaussian bell fuzzification
+#' @title Generalised bell fuzzification
 #' @description
-#' To generate a fuzzy membership function based on Gaussian bell fuzzification for the given crisp input x
-#' @param x the crisp input, which will be the parameter c for a gaussian bell membership function
-#' @param mf.params the parameters c(a, b) for a gaussian bell membership function
+#' To generate a fuzzy membership function based on generalised bell fuzzification for the given crisp input x
+#' @param x the crisp input, which will be the parameter c for a generalised bell membership function
+#' @param mf.params the parameters c(a, b) or c(a, b, h) for a generalised bell membership function
 #' @return The gbell MF centred at the crisp point x
 #' @examples
 #' mf <- gbell.fuzzification(3, c(1,2))
@@ -143,24 +149,30 @@ gbellmf <- function(mf.params) {
 #' @export
 
 gbell.fuzzification <- function(x, mf.params) {
-    mf.params <- c(mf.params, x)
+
+    if (length(mf.params) != 2 && length(mf.params) != 3) {
+        stop("improper parameters for gbellmf fuzzification")
+    }
+
+    mf.params <- append(mf.params, x, 2)
+
     genmf('gbellmf', mf.params)
 }
 
 
 ## Function: it2gbellmf
 ##  Description:
-##      to specify a interval type-2 gaussian bell membership function with a pair of particular parameters
+##      to specify a interval type-2 generalised bell membership function with a pair of particular parameters
 ##  Input:
-##      mf.params: the parameters c(a.lower, a.upper, b, c) for a gaussian bell membership function
+##      mf.params: the parameters c(a.lower, a.upper, b, c) for a generalised bell membership function
 ##  Output:
-##      the lower and upper gaussian bell membership function of x for a given pair of parameters
+##      the lower and upper generalised bell membership function of x for a given pair of parameters
 ##      , where x is a generic element of U, which is the universe of discourse of a fuzzy set X
 
 it2gbellmf <- function(mf.params) {
 
-    if(length(mf.params) != 4) {
-        stop("improper parameters for gaussian bell membership function")
+    if(length(mf.params) != 4 && length(mf.params) != 6) {
+        stop("improper parameters for generalised bell membership function")
     }
 
     a.lower <- mf.params[1]
@@ -168,31 +180,45 @@ it2gbellmf <- function(mf.params) {
     b <- mf.params[3]
     c <- mf.params[4]
 
-    gbellmf.lower <- function(x) {
-        1 / ( 1 + (((x - c)/a.lower)^2)^b)
+    if (length(mf.params) == 6) {
+        h.lower <- mf.params[5]
+        h.upper <- mf.params[6]
+    } else {
+        h.lower <- 1
+        h.upper <- 1
     }
 
-    gbellmf.upper <- function(x) {
-        1 / ( 1 + (((x - c)/a.upper)^2)^b)
+    it2gbellmf.lower <- function(x) {
+        h.lower / ( 1 + (((x - c)/a.lower)^2)^b)
     }
 
-    it2gbellmf <- c(gbellmf.lower, gbellmf.upper)
+    it2gbellmf.upper <- function(x) {
+        h.upper / ( 1 + (((x - c)/a.upper)^2)^b)
+    }
+
+    it2gbellmf <- c(it2gbellmf.lower, it2gbellmf.upper)
 }
 
 
 ## Function: it2gbell.fuzzification
 ##  Description:
-##      to make a interval type-2 gaussian bell fuzzification to the crisp input
+##      to make a interval type-2 generalised bell fuzzification to the crisp input
 ##  Input:
-##      x: the crisp input, which will be the parameter c for a gaussian bell membership function
-##      mf.params: the parameters c(a.lower, a.upper, b) for a gaussian bell membership function
+##      x: the crisp input, which will be the parameter c for a generalised bell membership function
+##      mf.params: the parameters c(a.lower, a.upper, b) for a generalised bell membership function
 ##  Output:
-##      the lower and upper gaussian bell membership function of x for a given pair of parameters
+##      the lower and upper generalised bell membership function of x for a given pair of parameters
 ##      , where x is a generic element of U, which is the universe of discourse of a fuzzy set X
 
 it2gbell.fuzzification <- function(x, mf.params) {
-    mf.params <- c(mf.params, x)
-    it2gbellmf(mf.params)
+
+    if (length(mf.params) != 3 && length(mf.params) != 5) {
+        stop("improper parameters for it2gbellmf fuzzification")
+    }
+
+    mf.params <- append(mf.params, x, 3)
+
+    genmf('it2gbellmf', mf.params)
 }
 
 
@@ -215,12 +241,20 @@ it2gbell.fuzzification <- function(x, mf.params) {
 
 singletonmf <- function(mf.params) {
 
-    if(length(mf.params) != 1) {
+    if(length(mf.params) != 1 && length(mf.params) != 2) {
         stop("improper parameters for singleton membership function")
     }
 
+    x.prime <- mf.params[1]
+
+    if (length(mf.params) == 2) {
+        h <- mf.params[2]
+    } else {
+        h <- 1
+    }
+
     singletonmf <- function(x) {
-        ifelse(x == mf.params, 1, 0)
+        ifelse(x == x.prime, h, 0)
     }
 }
 
@@ -229,7 +263,7 @@ singletonmf <- function(mf.params) {
 #' @description
 #' To generate a fuzzy membership function based on singleton fuzzification for the given crisp input x
 #' @param x the crisp input
-#' @param mf.params not used, singleton fuzzification does not need additional parameters
+#' @param mf.params NULL or h
 #' @return The singleton MF at the crisp point x
 #' @examples
 #' mf <- singleton.fuzzification(3)
@@ -237,9 +271,14 @@ singletonmf <- function(mf.params) {
 #' @author Chao Chen
 #' @export
 
-singleton.fuzzification <- function(x, mf.params) {
-    mf.params <- x
-    singletonmf(mf.params)
+singleton.fuzzification <- function(x, mf.params=NULL) {
+
+    if (!is.null(mf.params) && length(mf.params) != 1) {
+        stop("improper parameters for singleton fuzzification")
+    }
+
+    mf.params <- c(x, mf.params)
+    genmf('singletonmf', mf.params)
 }
 
 
@@ -267,9 +306,58 @@ gaussmf <- function(mf.params) {
     sig <- mf.params[1]
     c <- mf.params[2]
 
-    gaussmf <- function(x) {
-        exp(-(x - c)^2/(2 * sig^2))
+    if (length(mf.params) == 3) {
+        h <- mf.params[3]
+    } else {
+        h <- 1
     }
+
+    gaussmf <- function(x) {
+        exp(- (x - c) ^ 2 / (2 * sig ^ 2)) * h
+    }
+}
+
+
+gauss.fuzzification <- function(x, mf.params) {
+
+    if (length(mf.params) != 1 && length(mf.params) != 2) {
+        stop("improper parameters for gaussmf fuzzification")
+    }
+
+    mf.params <- append(mf.params, x, 1)
+
+    genmf('gaussmf', mf.params)
+}
+
+
+it2gaussmf <- function(mf.params) {
+
+    if(length(mf.params) != 4 && length(mf.params) != 6) {
+        stop("improper parameters for it2gaussmf membership function")
+    }
+
+    sig.lower <- mf.params[1]
+    c.lower <- mf.params[2]
+    sig.upper <- mf.params[3]
+    c.upper <- mf.params[4]
+
+    if (length(mf.params) == 6) {
+        h.lower <- mf.params[5]
+        h.upper <- mf.params[6]
+    } else {
+        h.lower <- 1
+        h.upper <- 1
+    }
+
+    it2gaussmf.lower <- function(x) {
+        exp(- (x - c.lower) ^ 2 / (2 * sig.lower ^ 2)) * h.lower
+    }
+
+    it2gaussmf.upper <- function(x) {
+        exp(- (x - c.upper) ^ 2 / (2 * sig.upper ^ 2)) * h.upper
+    }
+
+    it2gaussmf <- c(it2gaussmf.lower, it2gaussmf.upper)
 }
 
 
@@ -279,10 +367,53 @@ trapmf <- function(mf.params) {
     c <- mf.params[3]
     d <- mf.params[4]
 
-    trapmf <- function(x) {
-        y <- pmax(pmin( (x-a)/(b-a), 1, (d-x)/(d-c) ), 0)
-        y[is.na(y)]= 1; y
+    if (length(mf.params) == 5) {
+        h <- mf.params[5]
+    } else {
+        h <- 1
     }
+
+    trapmf <- function(x) {
+        y <- pmax(pmin((x - a) / (b - a), h, (d - x) / (d - c)), 0)
+        y[is.na(y)] = h; y
+    }
+}
+
+
+it2trapmf <- function(x, mf.params) {
+    if (length(mf.params) != 8 && length(mf.params) != 10) {
+        stop("improper parameters for it2gaussmf membership function")
+    }
+
+    a.lower <- mf.params[1]
+    b.lower <- mf.params[2]
+    c.lower <- mf.params[3]
+    d.lower <- mf.params[4]
+
+    a.upper <- mf.params[5]
+    b.upper <- mf.params[6]
+    c.upper <- mf.params[7]
+    d.upper <- mf.params[8]
+
+    if (length(mf.params) == 10) {
+        h.lower <- mf.params[9]
+        h.upper <- mf.params[10]
+    } else {
+        h.lower <- 1
+        h.upper <- 1
+    }
+
+    it2trapmf.lower <- function(x) {
+        y <- pmax(pmin((x - a.lower) / (b.lower - a.lower), h.lower, (d.lower - x) / (d.lower - c.lower)), 0)
+        y[is.na(y)] = h.lower; y
+    }
+
+    it2trapmf.upper <- function(x) {
+        y <- pmax(pmin((x - a.upper) / (b.upper - a.upper), h.upper, (d.upper - x) / (d.upper - c.upper)), 0)
+        y[is.na(y)] = h.upper; y
+    }
+
+    it2trapmf <- c(it2trapmf.lower, it2trapmf.upper)
 }
 
 
@@ -291,16 +422,59 @@ trimf <- function(mf.params) {
     b <- mf.params[2]
     c <- mf.params[3]
 
+    if (length(mf.params) == 4) {
+        h <- mf.params[4]
+    } else {
+        h <- 1
+    }
+
     trimf <- function(x) {
-        y <- pmax(pmin( (x-a)/(b-a), (c-x)/(c-b) ), 0)
-        y[is.na(y)]= 1; y
+        y <- h * pmax(pmin( (x-a)/(b-a), (c-x)/(c-b) ), 0)
+        y[is.na(y)]= h; y
     }
 }
 
 
+it2trimf <- function(mf.params) {
+    a.lower <- mf.params[1]
+    b.lower <- mf.params[2]
+    c.lower <- mf.params[3]
+    a.upper <- mf.params[4]
+    b.upper <- mf.params[5]
+    c.upper <- mf.params[6]
+
+    if (length(mf.params) == 8) {
+        h.lower <- mf.params[7]
+        h.upper <- mf.params[8]
+    } else {
+        h.lower <- 1
+        h.upper <- 1
+    }
+
+
+    it2trimf.lower <- function(x) {
+        y <- h.lower * pmax(pmin((x - a.lower) / (b.lower - a.lower), (c.lower - x) / (c.lower - b.lower)), 0)
+        y[is.na(y)] = h.lower; y
+    }
+
+    it2trimf.upper <- function(x) {
+        y <- h.upper * pmax(pmin((x - a.upper) / (b.upper - a.upper), (c.upper - x) / (c.upper - b.upper)), 0)
+        y[is.na(y)] = h.upper; y
+    }
+
+    it2trimf <- c(it2trimf.lower, it2trimf.upper)
+}
+
+
 trimf.fuzzification <- function(x, mf.params) {
+
+    if (length(mf.params) != 2 && length(mf.params) != 3) {
+        stop("improper parameters for trimf fuzzification")
+    }
+
     mf.params <- append(mf.params, x, 1)
-    trimf(mf.params)
+
+    genmf('trimf', mf.params)
 }
 
 

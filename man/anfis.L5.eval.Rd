@@ -22,4 +22,3 @@ See the source code of \code{\link{anfis.eval}} for usage.
 \author{
 Chao Chen
 }
-

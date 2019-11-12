@@ -19,4 +19,3 @@ Shows a fis and all its data in an ordered format on the console.
 fis <- tipper()
 showfis(fis)
 }
-

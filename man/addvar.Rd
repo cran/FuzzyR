@@ -30,4 +30,3 @@ Adds an input or output variable to a fis object.
 fis <- newfis('tipper')
 fis <- addvar(fis, 'input', 'service', c(0, 10))
 }
-

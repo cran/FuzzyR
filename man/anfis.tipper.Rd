@@ -15,4 +15,3 @@ A function used primarily for example purposes, it creates a fis with two input 
 \examples{
 fis <- anfis.tipper()
 }
-

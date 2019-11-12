@@ -30,4 +30,3 @@ anfis.eval(anfis, input.stack)
 \author{
 Chao Chen
 }
-

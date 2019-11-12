@@ -4,13 +4,16 @@
 \alias{newfis}
 \title{Create a fis using newfis function}
 \usage{
-newfis(fisName, fisType = "mamdani", andMethod = "min", orMethod = "max",
-  impMethod = "min", aggMethod = "max", defuzzMethod = "centroid")
+newfis(fisName, fisType = "mamdani", mfType = "t1",
+  andMethod = "min", orMethod = "max", impMethod = "min",
+  aggMethod = "max", defuzzMethod = "centroid")
 }
 \arguments{
 \item{fisName}{String representing the fis name.}
 
 \item{fisType}{Type of the fis, default is 'mamdani'.}
+
+\item{mfType}{Type of membership functions, 't1' or 'it2'}
 
 \item{andMethod}{The AND method for the fis, default is 'min'.}
 
@@ -31,4 +34,3 @@ Creates a fis object.
 \examples{
 fis <- newfis("fisName")
 }
-

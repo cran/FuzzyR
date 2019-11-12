@@ -33,4 +33,3 @@ To build a one-output TSK FIS by automatically generating the input membership f
 \author{
 Chao Chen
 }
-

@@ -15,4 +15,3 @@ A fis structure with its values generated from that of the files.
 \description{
 Reads a fis object from a file with the .fis extension, and converts it into a data structure to be used within the environment.
 }
-

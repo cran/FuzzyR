@@ -32,4 +32,3 @@ firing.strength
 \author{
 Chao Chen
 }
-

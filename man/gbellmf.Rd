@@ -2,19 +2,19 @@
 % Please edit documentation in R/FuzzyMF.R
 \name{gbellmf}
 \alias{gbellmf}
-\title{Gaussian bell membership function}
+\title{Generalised bell membership function}
 \usage{
 gbellmf(mf.params)
 }
 \arguments{
-\item{mf.params}{The parameters c(a, b, c) for a gaussian bell membership function}
+\item{mf.params}{The parameters c(a, b, c) for a generalised bell membership function}
 }
 \value{
-The gaussian bell membership function of x for a given pair of parameters,
+The generalised bell membership function of x for a given pair of parameters,
 where x is a generic element of U, which is the universe of discourse of a fuzzy set X
 }
 \description{
-To specify a gaussian bell membership function with a pair of particular parameters
+To specify a generalised bell membership function with a pair of particular parameters
 }
 \details{
 This is not an external function. It should be used through \code{\link{genmf}}.
@@ -29,4 +29,3 @@ evalmf(5, mf)
 \author{
 Chao Chen
 }
-

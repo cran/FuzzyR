@@ -4,12 +4,12 @@
 \alias{singleton.fuzzification}
 \title{Singleton Fuzzification}
 \usage{
-singleton.fuzzification(x, mf.params)
+singleton.fuzzification(x, mf.params = NULL)
 }
 \arguments{
 \item{x}{the crisp input}
 
-\item{mf.params}{not used, singleton fuzzification does not need additional parameters}
+\item{mf.params}{NULL or h}
 }
 \value{
 The singleton MF at the crisp point x
@@ -24,4 +24,3 @@ evalmf(1:10, mf)
 \author{
 Chao Chen
 }
-
