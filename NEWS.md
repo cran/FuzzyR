@@ -1,5 +1,17 @@
 # *News*
 
+# FuzzyR 2.3
+
+## New features
+
+* Add implementation of TSK type fuzzy inference systems based on [An extended ANFIS architecture](https://doi.org/10.1109/FUZZ-IEEE.2016.7737742).
+* Add new function `tipper.tsk`.
+
+## Bug fixes
+
+* Address the issue of `evalfis` for interval type-2 fis: it now gives a single (rather than two) crisp defuzzified output.
+
+
 # FuzzyR 2.2
 
 ## New features
@@ -21,6 +33,7 @@
 * Add new package dependency: `grid`.
 * Add reference: [A Comment on “A Direct Approach for Determining the Switch Points in the Karnik–Mendel Algorithm”](https://doi.org/10.1109/TFUZZ.2018.2865134).
 * Add reference: [Type-1 and Interval Type-2 ANFIS: A Comparison](https://doi.org/10.1109/FUZZ-IEEE.2017.8015555). 
+
 
 # FuzzyR 2.1
 

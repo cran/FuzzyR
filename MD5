@@ -1,8 +1,8 @@
-5b68b6edf049246cc59e02784f8c752e *DESCRIPTION
-b054f239bf9a1adb469786323543c5a5 *NAMESPACE
-bc3c35e3f944bc24949b8c487b85af1e *NEWS.md
+f4570917575062bb509341f255a69609 *DESCRIPTION
+72d645d9f862aa62d87bb4a956a0013a *NAMESPACE
+79eeae23e8cfa56c1b5ee39a6a5f916c *NEWS.md
 5a6bf98fe66056b35909ab03b635cb4e *R/ANFIS.R
-a89bf8a73f3344af4e32be6ec354e891 *R/FuzzyInferenceSystem.R
+8957723baf80f11666a9d580aadeedfa *R/FuzzyInferenceSystem.R
 9bc19d8700997b5af320157b8352c727 *R/FuzzyMF.R
 bd94cea5997fe6211ca9271490b24740 *R/FuzzyOperation.R
 1beebfa886e00f0b05031563285192bd *R/Utilities.R
@@ -64,6 +64,7 @@ d390e2ca6122b575d9e8337c2cfd0d6d *man/showfis.Rd
 9d1773febed26ff609e7400a474a86c5 *man/singleton.fuzzification.Rd
 1aba396f640b7bc05a3ca0d942a2c280 *man/singletonmf.Rd
 6234b35f4d42651aac0685b70c82df03 *man/tipper.Rd
+d87ac6494d33eba0d944f88b6dff64b3 *man/tipper.tsk.Rd
 1f7a67e334655255076a362c985bdf3a *man/tipperGUI.Rd
 2f6617a265ba6c00af9f44a170ed5319 *man/tipperGUI2.Rd
 f7b5862760c601e9a005f2044f55d317 *man/writefis.Rd

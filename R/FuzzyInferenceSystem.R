@@ -5,8 +5,8 @@ globalVariables(c('D_x', 'D_y', 'D_out', 'genRule', 'perturb', 'NumInputs', 'Ran
 'mfParams', 'NumOutputs', 'NumRules', 'ruleList', 'err.opt', 'err.trn', 'err.chk', 'myaccuracy',
 'theta.L1', 'ekm', 'theta.L4', 'optimise', 'persp', 'rainbow', 'plot', 'axis', 'mtext', 'polygon',
 'gray', 'lines', 'text', 'mtext', 'pdf', 'dev.off', 'show', 'tail', 'OUT_COUPLE', 'pushViewport',
-'plotViewport', 'popViewport', 'RULE_CONS', 'IN_COUPLE', 'drawAnteEval', 'drawConsEval', 
-'drawRuleEval', 'viewport', 'drawRuleAggr', 'trCentroid', 'plot_it2', 'trCOS', 'iterative_method', 
+'plotViewport', 'popViewport', 'RULE_CONS', 'IN_COUPLE', 'drawAnteEval', 'drawConsEval',
+'drawRuleEval', 'viewport', 'drawRuleAggr', 'trCentroid', 'plot_it2', 'trCOS', 'iterative_method',
 'drawAllSteps', 'rangex'))
 #end
 
@@ -57,15 +57,15 @@ defuzzMethod="centroid") {
 #' fis <- addvar(fis, 'input', 'service', c(0, 10))
 #' @export
 addvar <- function(fis, varType, varName, varBounds, method=NULL, params=NULL) {
-  if ( varType == "input" ) {
-    fis$input <- append(fis$input,
-      list(list(name=varName, range=varBounds, fuzzification.method=method, fuzzification.params=params, mf=NULL)))
-  }
-  else {
-    fis$output <- append(fis$output,
-      list(list(name=varName, range=varBounds, mf=NULL, defuzzification.method=method)))
-  }
-  fis
+    if (varType == "input") {
+        fis$input <- append(fis$input,
+        list(list(name = varName, range = varBounds, fuzzification.method = method, fuzzification.params = params, mf = NULL)))
+    }
+    else {
+        fis$output <- append(fis$output,
+        list(list(name = varName, range = varBounds, mf = NULL, defuzzification.method = method)))
+    }
+    fis
 }
 
 
@@ -121,9 +121,9 @@ addmf <- function(fis, varType, varIndex, mfName, mfType, mfParams) {
 #' fis <- addrule(fis, ruleList)
 #' @export
 addrule <- function(fis, ruleList) {
-  fis$rule <- rbind(fis$rule, rbind(ruleList))
-  rownames(fis$rule) <- NULL
-  fis
+    fis$rule <- rbind(fis$rule, rbind(ruleList))
+    rownames(fis$rule) <- NULL
+    fis
 }
 
 #' Showing rule from fis object
@@ -139,44 +139,46 @@ addrule <- function(fis, ruleList) {
 #' showrule(fis)
 #' @export
 showrule <- function(fis) {
-  NumInputs= length(fis$input)
-  NumOutputs= length(fis$output)
-  NumRules= nrow(fis$rule)
-  frow= 0
+    NumInputs = length(fis$input)
+    NumOutputs = length(fis$output)
+    NumRules = nrow(fis$rule)
+    frow = 0
 
-  if ( !is.null(NumRules) ) {
-    for ( i in 1:NumRules ) {
-      frow= frow + 1
-      cat(frow, '. If ', sep='');
-      for ( j in 1:NumInputs )
-      {
-      	if ( fis$rule[i,j] != 0 )
-      	{
-      		cat('(', fis$input[[j]]$name, ' is ', sep='')
-      		if ( fis$rule[i,j] < 0 ) cat('not ', sep='')
-      		cat(fis$input[[j]]$mf[[abs(fis$rule[i,j])]]$name, ') ', sep='')
-      	}
-      	if ( j < NumInputs && fis$rule[i,j] != 0 && fis$rule[i,j+1] != 0 )
-      	{
-		    if ( fis$rule[i,NumInputs+NumOutputs+2] == 1 )
-		    	cat('and ', sep='')
-		    else
-		    	cat('or ', sep='')
-	    }
-      }
-      cat('then ', sep='')
-      for ( j in 1:NumOutputs )
-      {
-      	if ( fis$rule[i,NumInputs+j] != 0 )
-      	{
-      		cat('(', fis$output[[j]]$name, ' is ', sep='')
-      		if ( fis$rule[i,NumInputs+j] < 0 ) cat('not ', sep='')
-      		cat(fis$output[[j]]$mf[[abs(fis$rule[i,NumInputs+j])]]$name, ') ', sep='')
-      	}
-      }
-      cat('(', fis$rule[i,NumInputs+NumOutputs+1], ')\n', sep='')
+    if (! is.null(NumRules)) {
+        for (i in 1 : NumRules) {
+            frow = frow + 1
+            cat(frow, '. If ', sep = '');
+            for (j in 1 : NumInputs)
+            {
+                if (fis$rule[i, j] != 0)
+                {
+                    cat('(', fis$input[[j]]$name, ' is ', sep = '')
+                    if (fis$rule[i, j] < 0) cat('not ', sep = '')
+                    cat(fis$input[[j]]$mf[[abs(fis$rule[i, j])]]$name, ') ', sep = '')
+                }
+                if (j < NumInputs &&
+                    fis$rule[i, j] != 0 &&
+                    fis$rule[i, j + 1] != 0)
+                {
+                    if (fis$rule[i, NumInputs + NumOutputs + 2] == 1)
+                    cat('and ', sep = '')
+                    else
+                    cat('or ', sep = '')
+                }
+            }
+            cat('then ', sep = '')
+            for (j in 1 : NumOutputs)
+            {
+                if (fis$rule[i, NumInputs + j] != 0)
+                {
+                    cat('(', fis$output[[j]]$name, ' is ', sep = '')
+                    if (fis$rule[i, NumInputs + j] < 0) cat('not ', sep = '')
+                    cat(fis$output[[j]]$mf[[abs(fis$rule[i, NumInputs + j])]]$name, ') ', sep = '')
+                }
+            }
+            cat('(', fis$rule[i, NumInputs + NumOutputs + 1], ')\n', sep = '')
+        }
     }
-  }
 }
 
 #' Produce a graphical evaluated fuzzy inference system.
@@ -193,23 +195,23 @@ showrule <- function(fis) {
 #' gensurf(fis)
 #' @export
 gensurf <- function(fis, ix1=1, ix2=2, ox1=1) {
-  i1= fis$input[[ix1]]
-  i2= fis$input[[ix2]]
-  o1= fis$output[[ox1]]
+    i1 = fis$input[[ix1]]
+    i2 = fis$input[[ix2]]
+    o1 = fis$output[[ox1]]
 
-  x= seq(i1$range[1], i1$range[2], length=15)
-  y= seq(i2$range[1], i2$range[2], length=15)
-  m= as.matrix(expand.grid(x, y))
+    x = seq(i1$range[1], i1$range[2], length = 15)
+    y = seq(i2$range[1], i2$range[2], length = 15)
+    m = as.matrix(expand.grid(x, y))
 
-  o= evalfis(m, fis)
-  z= matrix(o[,ox1], 15, 15, byrow=F)
+    o = evalfis(m, fis)
+    z = matrix(o[, ox1], 15, 15, byrow = F)
 
-  h= (z[-15,-15] + z[-1,-15] + z[-15,-1] + z[-1,-1]) / 4
-  h= floor((h-min(h, na.rm=T))/(max(h, na.rm=T)-min(h, na.rm=T))*14+.5)+1
+    h = (z[- 15, - 15] + z[- 1, - 15] + z[- 15, - 1] + z[- 1, - 1]) / 4
+    h = floor((h - min(h, na.rm = T)) / (max(h, na.rm = T) - min(h, na.rm = T)) * 14 + .5) + 1
 
-  persp(x, y, z,
-    xlab=i1$name, ylab=i2$name, zlab=o1$name,
-    theta=-30, phi=30, col=rainbow(15)[16-h], ticktype='detailed')
+    persp(x, y, z,
+    xlab = i1$name, ylab = i2$name, zlab = o1$name,
+    theta = - 30, phi = 30, col = rainbow(15)[16 - h], ticktype = 'detailed')
 }
 
 
@@ -231,15 +233,15 @@ gensurf <- function(fis, ix1=1, ix2=2, ox1=1) {
 #' fis <- tipper()
 #' plotmf(fis, "input", 1)
 #' @export
-plotmf <- function(fis, varType, varIndex,xx=NULL,timelimit=0,xlab=NULL,ylab=NULL,main=NULL) {
+plotmf <- function(fis, varType, varIndex, xx=NULL, timelimit=0, xlab=NULL, ylab=NULL, main=NULL) {
 
-	if (varType == 'input') {
-		var <- fis$input[[varIndex]]
-	} else {
-	    var <- fis$output[[varIndex]]
-	}
+    if (varType == 'input') {
+        var <- fis$input[[varIndex]]
+    } else {
+        var <- fis$output[[varIndex]]
+    }
 
-    if(is.null(xlab)) xlab=var$name
+    if (is.null(xlab))xlab = var$name
     plotvar(var, xx, timelimit, xlab, ylab, main)
 }
 
@@ -273,24 +275,24 @@ plotmf <- function(fis, varType, varIndex,xx=NULL,timelimit=0,xlab=NULL,ylab=NUL
 #' @export
 anfis.plotmf <- function(anfis, varType, varIndex, xx=NULL, timelimit=0, xlab=NULL, ylab=NULL, main=NULL) {
 
-	if (varType == 'input') {
-		var <- list()
-		var$name <- anfis$layer[[1]]$node[[varIndex]]$name
-		var$range <- anfis$layer[[1]]$node[[varIndex]]$range
-		var$mf <- list()
+    if (varType == 'input') {
+        var <- list()
+        var$name <- anfis$layer[[1]]$node[[varIndex]]$name
+        var$range <- anfis$layer[[1]]$node[[varIndex]]$range
+        var$mf <- list()
 
         fan.out <- anfis$layer[[1]]$node[[varIndex]]$fan.out
-		for(i in fan.out) {
-		    name <- anfis$layer[[2]]$node[[i]]$mf.name
-		    type <- anfis$layer[[2]]$node[[i]]$mf.type
-		    params <- anfis$layer[[2]]$node[[i]]$mf.params
-		    var$mf <- append(var$mf, list(list(name=name, type=type, params=params)))
-		}
-	} else {
-	    stop("plots for output membership functions not supported")
-	}
+        for (i in fan.out) {
+            name <- anfis$layer[[2]]$node[[i]]$mf.name
+            type <- anfis$layer[[2]]$node[[i]]$mf.type
+            params <- anfis$layer[[2]]$node[[i]]$mf.params
+            var$mf <- append(var$mf, list(list(name = name, type = type, params = params)))
+        }
+    } else {
+        stop("plots for output membership functions not supported")
+    }
 
-    if(is.null(xlab)) xlab=var$name
+    if (is.null(xlab))xlab = var$name
     plotvar(var, xx, timelimit, xlab, ylab, main)
 }
 
@@ -384,34 +386,34 @@ plotvar <- function(var, xx=NULL, timelimit=0, xlab=NULL, ylab=NULL, main=NULL) 
 
 
 # plot_graph - used in plotmf
-plot_graph <- function (x,y,xlab=NULL,ylab=NULL,title=NULL){
-	plot(x, y, type="n",col=2,bty="o",xaxs = "i",yaxs = "i",cex.axis=.8,cex.lab=.8,main=title,xaxt="n",yaxt="n",ylab="",xlab="",las=1)
+plot_graph <- function (x, y, xlab=NULL, ylab=NULL, title=NULL){
+    plot(x, y, type = "n", col = 2, bty = "o", xaxs = "i", yaxs = "i", cex.axis = .8, cex.lab = .8, main = title, xaxt = "n", yaxt = "n", ylab = "", xlab = "", las = 1)
 
-	point_n <- length(x)
-	axis(1,labels=FALSE,tick=TRUE,pos=0)
-	mtext(x[1],side=1,line=1,outer=FALSE,adj=0,cex=.8)
+    point_n <- length(x)
+    axis(1, labels = FALSE, tick = TRUE, pos = 0)
+    mtext(x[1], side = 1, line = 1, outer = FALSE, adj = 0, cex = .8)
 
-	if (length(xlab)==0){
-		mtext("x",side=1,line=1,outer=FALSE,padj=0,cex=.8)
-	} else {
-	    mtext(xlab,side=1,line=1,outer=FALSE,padj=0,cex=.8)
-	}
+    if (length(xlab) == 0) {
+        mtext("x", side = 1, line = 1, outer = FALSE, padj = 0, cex = .8)
+    } else {
+        mtext(xlab, side = 1, line = 1, outer = FALSE, padj = 0, cex = .8)
+    }
 
-	mtext(x[point_n],side=1,line=1,outer=FALSE,adj=1,cex=.8)
-	axis(2,labels=FALSE,tick=TRUE,pos=0)
-	mtext(y[1],side=2,line=1,outer=FALSE,at=c(0),cex=.8,las=1)
+    mtext(x[point_n], side = 1, line = 1, outer = FALSE, adj = 1, cex = .8)
+    axis(2, labels = FALSE, tick = TRUE, pos = 0)
+    mtext(y[1], side = 2, line = 1, outer = FALSE, at = c(0), cex = .8, las = 1)
 
-	if (length(ylab)==0){
-		mtext("m",side=2,line=1,outer=FALSE,padj=0,cex=.8,las=1,font=5)
-	} else {
-	    if(ylab %in% c('u', 'm')) {
-	        mtext(ylab,side=2,line=1,outer=FALSE,padj=0,cex=.8,las=1,font=5)
-	    } else {
-	        mtext(ylab,side=2,line=1,outer=FALSE,padj=0,cex=.8)
-	    }
-	}
+    if (length(ylab) == 0) {
+        mtext("m", side = 2, line = 1, outer = FALSE, padj = 0, cex = .8, las = 1, font = 5)
+    } else {
+        if (ylab %in% c('u', 'm')) {
+            mtext(ylab, side = 2, line = 1, outer = FALSE, padj = 0, cex = .8, las = 1, font = 5)
+        } else {
+            mtext(ylab, side = 2, line = 1, outer = FALSE, padj = 0, cex = .8)
+        }
+    }
 
-	mtext(y[point_n],side=2,line=1,outer=FALSE,at=c(1),cex=.8,las=1)
+    mtext(y[point_n], side = 2, line = 1, outer = FALSE, at = c(1), cex = .8, las = 1)
 }
 
 
@@ -423,94 +425,94 @@ plot_graph <- function (x,y,xlab=NULL,ylab=NULL,title=NULL){
 #' @param fileName filename
 #' @export
 writefis <- function(fis, fileName='fuzzy.fis') {
-  fileText= NULL
+    fileText = NULL
 
-  fileText[1]= "% R-Fuzzy (C) J.M.Garibaldi, 1st Oct 2004 $Revision: 0.1$"
-  NumInputs= length(fis$input)
-  NumOutputs= length(fis$output)
+    fileText[1] = "% R-Fuzzy (C) J.M.Garibaldi, 1st Oct 2004 $Revision: 0.1$"
+    NumInputs = length(fis$input)
+    NumOutputs = length(fis$output)
 
-  NumInputMFs= NULL
-  for ( i in 1:NumInputs ) {
-    NumInputMFs[i]= length(fis$input[[i]]$mf)
-  }
-
-  NumOutputMFs= NULL
-  for ( i in 1:NumOutputs ) {
-    NumOutputMFs[i]= length(fis$output[[i]]$mf)
-  }
-
-  NumRules= nrow(fis$rule)
-
-  fileText[2]= "[System]"
-  fileText[3]= paste("Name='", fis$name, "'", sep="")
-  fileText[4]= paste("Type='", fis$type, "'", sep="")
-  fileText[5]= paste("NumInputs=", NumInputs, sep="")
-  fileText[6]= paste("NumOutputs=", NumOutputs, sep="")
-  fileText[7]= paste("NumRules=", NumRules, sep="")
-  fileText[8]= paste("AndMethod='", fis$andMethod, "'", sep="")
-  fileText[9]= paste("OrMethod='", fis$orMethod, "'", sep="")
-  fileText[10]= paste("ImpMethod='", fis$impMethod, "'", sep="")
-  fileText[11]= paste("AggMethod='", fis$aggMethod, "'", sep="")
-  fileText[12]= paste("DefuzzMethod='", fis$defuzzMethod, "'", sep="")
-  fileText[13]= ""
-  line= 14
-
-  for ( i in 1:NumInputs ) {
-    fileText[line]= paste("[Input", i, "]", sep="")
-    line= line + 1
-    fileText[line]= paste("Name='", fis$input[[i]]$name, "'", sep="")
-    line= line + 1
-    fileText[line]= paste("Range=[", fis$input[[i]]$range[1], " ", fis$input[[i]]$range[2], "]", sep="")
-    line= line + 1
-    fileText[line]= paste("NumMFs=", NumInputMFs[i], sep="")
-    line= line + 1
-
-    for ( j in 1:NumInputMFs[i] ) {
-      part1= paste("MF", j, "='", fis$input[[i]]$mf[[j]]$name, "':", sep="")
-      part2= paste("'", fis$input[[i]]$mf[[j]]$type, "',", sep="")
-      part3= paste("[", paste(fis$input[[i]]$mf[[j]]$params, collapse=" "), "]", sep="")
-      fileText[line]= paste(part1, part2, part3, sep="")
-      line= line + 1
+    NumInputMFs = NULL
+    for (i in 1 : NumInputs) {
+        NumInputMFs[i] = length(fis$input[[i]]$mf)
     }
 
-    fileText[line]= ""
-    line= line + 1
-  }
-
-  for ( i in 1:NumOutputs ) {
-    fileText[line]= paste("[Output", i, "]", sep="")
-    line= line + 1
-    fileText[line]= paste("Name='", fis$output[[i]]$name, "'", sep="")
-    line= line + 1
-    fileText[line]= paste("Range=[", fis$output[[i]]$range[1], " ", fis$output[[i]]$range[2], "]", sep="")
-    line= line + 1
-    fileText[line]= paste("NumMFs=", NumOutputMFs[i], sep="")
-    line= line + 1
-
-    for ( j in 1:NumOutputMFs[i] ) {
-      part1= paste("MF", j, "='", fis$output[[i]]$mf[[j]]$name, "':", sep="")
-      part2= paste("'", fis$output[[i]]$mf[[j]]$type, "',", sep="")
-      part3= paste("[", paste(fis$output[[i]]$mf[[j]]$params, collapse=" "), "]", sep="")
-      fileText[line]= paste(part1, part2, part3, sep="")
-      line= line + 1
+    NumOutputMFs = NULL
+    for (i in 1 : NumOutputs) {
+        NumOutputMFs[i] = length(fis$output[[i]]$mf)
     }
 
-    fileText[line]= ""
-    line= line + 1
-  }
+    NumRules = nrow(fis$rule)
 
-  fileText[line]= "[Rules]"
-  line= line + 1
-  for ( i in 1:NumRules ) {
-      part1= paste(fis$rule[i,1:NumInputs], collapse=" ")
-      part2= paste(fis$rule[i,(NumInputs+1):(NumInputs+NumOutputs)], collapse=" ")
-      part3= paste(" (", fis$rule[i,NumInputs+NumOutputs+1], ") : ", fis$rule[i,NumInputs+NumOutputs+2], sep="")
-      fileText[line]= paste(part1, ", ", part2, part3, sep="")
-      line= line + 1
-  }
+    fileText[2] = "[System]"
+    fileText[3] = paste("Name='", fis$name, "'", sep = "")
+    fileText[4] = paste("Type='", fis$type, "'", sep = "")
+    fileText[5] = paste("NumInputs=", NumInputs, sep = "")
+    fileText[6] = paste("NumOutputs=", NumOutputs, sep = "")
+    fileText[7] = paste("NumRules=", NumRules, sep = "")
+    fileText[8] = paste("AndMethod='", fis$andMethod, "'", sep = "")
+    fileText[9] = paste("OrMethod='", fis$orMethod, "'", sep = "")
+    fileText[10] = paste("ImpMethod='", fis$impMethod, "'", sep = "")
+    fileText[11] = paste("AggMethod='", fis$aggMethod, "'", sep = "")
+    fileText[12] = paste("DefuzzMethod='", fis$defuzzMethod, "'", sep = "")
+    fileText[13] = ""
+    line = 14
 
-  fileText[line]= ""
-  writeLines(fileText, fileName)
+    for (i in 1 : NumInputs) {
+        fileText[line] = paste("[Input", i, "]", sep = "")
+        line = line + 1
+        fileText[line] = paste("Name='", fis$input[[i]]$name, "'", sep = "")
+        line = line + 1
+        fileText[line] = paste("Range=[", fis$input[[i]]$range[1], " ", fis$input[[i]]$range[2], "]", sep = "")
+        line = line + 1
+        fileText[line] = paste("NumMFs=", NumInputMFs[i], sep = "")
+        line = line + 1
+
+        for (j in 1 : NumInputMFs[i]) {
+            part1 = paste("MF", j, "='", fis$input[[i]]$mf[[j]]$name, "':", sep = "")
+            part2 = paste("'", fis$input[[i]]$mf[[j]]$type, "',", sep = "")
+            part3 = paste("[", paste(fis$input[[i]]$mf[[j]]$params, collapse = " "), "]", sep = "")
+            fileText[line] = paste(part1, part2, part3, sep = "")
+            line = line + 1
+        }
+
+        fileText[line] = ""
+        line = line + 1
+    }
+
+    for (i in 1 : NumOutputs) {
+        fileText[line] = paste("[Output", i, "]", sep = "")
+        line = line + 1
+        fileText[line] = paste("Name='", fis$output[[i]]$name, "'", sep = "")
+        line = line + 1
+        fileText[line] = paste("Range=[", fis$output[[i]]$range[1], " ", fis$output[[i]]$range[2], "]", sep = "")
+        line = line + 1
+        fileText[line] = paste("NumMFs=", NumOutputMFs[i], sep = "")
+        line = line + 1
+
+        for (j in 1 : NumOutputMFs[i]) {
+            part1 = paste("MF", j, "='", fis$output[[i]]$mf[[j]]$name, "':", sep = "")
+            part2 = paste("'", fis$output[[i]]$mf[[j]]$type, "',", sep = "")
+            part3 = paste("[", paste(fis$output[[i]]$mf[[j]]$params, collapse = " "), "]", sep = "")
+            fileText[line] = paste(part1, part2, part3, sep = "")
+            line = line + 1
+        }
+
+        fileText[line] = ""
+        line = line + 1
+    }
+
+    fileText[line] = "[Rules]"
+    line = line + 1
+    for (i in 1 : NumRules) {
+        part1 = paste(fis$rule[i, 1 : NumInputs], collapse = " ")
+        part2 = paste(fis$rule[i, (NumInputs + 1) : (NumInputs + NumOutputs)], collapse = " ")
+        part3 = paste(" (", fis$rule[i, NumInputs + NumOutputs + 1], ") : ", fis$rule[i, NumInputs + NumOutputs + 2], sep = "")
+        fileText[line] = paste(part1, ", ", part2, part3, sep = "")
+        line = line + 1
+    }
+
+    fileText[line] = ""
+    writeLines(fileText, fileName)
 }
 
 
@@ -522,128 +524,128 @@ writefis <- function(fis, fileName='fuzzy.fis') {
 #' @return A fis structure with its values generated from that of the files.
 #' @export
 readfis <- function(fileName) {
-  fileText <- readLines(fileName)
-  if ( length(fileText) == 0 )
+    fileText <- readLines(fileName)
+    if (length(fileText) == 0)
     stop('Zero length file!')
-  fis <- list()
-  line <- 1
+    fis <- list()
+    line <- 1
 
-  # structure parameters
-  line= charmatch('[System]', fileText)
-  if ( is.na(line) || line == 0 )
+    # structure parameters
+    line = charmatch('[System]', fileText)
+    if (is.na(line) || line == 0)
     stop(paste("No '[System]' line in file", fileName))
-  line <- line + 1
-
-  # defaults in case the user has omitted them
-  Name <- 'untitled'
-  Type <- 'mamdani'
-  AndMethod <- 'min'
-  OrMethod <- 'max'
-  ImpMethod <- 'min'
-  AggMethod <- 'max'
-  DefuzzMethod <- 'centroid'
-
-  # evaluate the values from the file
-  while ( all(is.na(charmatch(c('[In', '[Out', '[Rules'), fileText[line]))) ) {
-    eval(parse(text=fileText[line]))
     line <- line + 1
-  }
 
-  # create a FIS with the given structure
-  fis <- list(name=Name, type=Type,
-    andMethod=AndMethod, orMethod=OrMethod,
-    impMethod=ImpMethod, aggMethod=AggMethod,
-    defuzzMethod=DefuzzMethod,
-    input=NULL, output=NULL, rule=NULL)
+    # defaults in case the user has omitted them
+    Name <- 'untitled'
+    Type <- 'mamdani'
+    AndMethod <- 'min'
+    OrMethod <- 'max'
+    ImpMethod <- 'min'
+    AggMethod <- 'max'
+    DefuzzMethod <- 'centroid'
 
-  # now begin with the inputs
-  for ( varIndex in 1:NumInputs ) {
-    while ( is.na(charmatch('[Input', fileText[line])) )
-      line <- line + 1
-
-    # name and range (needs processing)
-    eval(parse(text=fileText[line+1]))
-    rangeStr <- fileText[line+2]
-    rangeSplit <- unlist(strsplit(rangeStr, "[][ ]"))
-    rangeText <- paste(rangeSplit[1], 'c(', paste(rangeSplit[-1], collapse=','), ')')
-    eval(parse(text=rangeText))
-
-    # now add the variable to the FIS
-    fis <- addvar(fis, 'input', Name, Range)
-
-    # number of membership functions
-    eval(parse(text=fileText[line+3]))
-    line <- line + 4
-
-    for ( MFIndex in 1:NumMFs) {
-      mfStr <- fileText[line]
-      #browser()
-      mfSplit <- unlist(strsplit(mfStr, "[',]"))
-      mfName <- mfSplit[2]
-      mfType <- mfSplit[4]
-      paramSplit <- unlist(strsplit(mfSplit[6], "[][ ]"))
-      paramText <- paste('mfParams=', 'c(', paste(paramSplit[-1], collapse=','), ')')
-      eval(parse(text=paramText))
-
-      # now add the membership function to the FIS
-      fis <- addmf(fis, 'input', varIndex, mfName, mfType, mfParams)
-      line <- line + 1
+    # evaluate the values from the file
+    while (all(is.na(charmatch(c('[In', '[Out', '[Rules'), fileText[line])))) {
+        eval(parse(text = fileText[line]))
+        line <- line + 1
     }
-  }
 
-  # now for the outputs
-  for ( varIndex in 1:NumOutputs ) {
-    while ( is.na(charmatch('[Output', fileText[line])) )
-      line <- line + 1
+    # create a FIS with the given structure
+    fis <- list(name = Name, type = Type,
+    andMethod = AndMethod, orMethod = OrMethod,
+    impMethod = ImpMethod, aggMethod = AggMethod,
+    defuzzMethod = DefuzzMethod,
+    input = NULL, output = NULL, rule = NULL)
 
-    # name and range (needs processing)
-    eval(parse(text=fileText[line+1]))
-    rangeStr <- fileText[line+2]
-    rangeSplit <- unlist(strsplit(rangeStr, "[][ ]"))
-    rangeText <- paste(rangeSplit[1], 'c(', paste(rangeSplit[-1], collapse=','), ')')
-    eval(parse(text=rangeText))
+    # now begin with the inputs
+    for (varIndex in 1 : NumInputs) {
+        while (is.na(charmatch('[Input', fileText[line])))
+        line <- line + 1
 
-    # now add the variable to the FIS
-    fis <- addvar(fis, 'output', Name, Range)
+        # name and range (needs processing)
+        eval(parse(text = fileText[line + 1]))
+        rangeStr <- fileText[line + 2]
+        rangeSplit <- unlist(strsplit(rangeStr, "[][ ]"))
+        rangeText <- paste(rangeSplit[1], 'c(', paste(rangeSplit[- 1], collapse = ','), ')')
+        eval(parse(text = rangeText))
 
-    # number of membership functions
-    eval(parse(text=fileText[line+3]))
-    line <- line + 4
+        # now add the variable to the FIS
+        fis <- addvar(fis, 'input', Name, Range)
 
-    for ( MFIndex in 1:NumMFs) {
-      mfStr <- fileText[line]
-      #browser()
-      mfSplit <- unlist(strsplit(mfStr, "[',]"))
-      mfName <- mfSplit[2]
-      mfType <- mfSplit[4]
-      paramSplit <- unlist(strsplit(mfSplit[6], "[][ ]"))
-      paramText <- paste('mfParams= c(', paste(paramSplit[-1], collapse=','), ')')
-      eval(parse(text=paramText))
+        # number of membership functions
+        eval(parse(text = fileText[line + 3]))
+        line <- line + 4
 
-      # now add the membership function to the FIS
-      fis <- addmf(fis, 'output', varIndex, mfName, mfType, mfParams)
-      line <- line + 1
+        for (MFIndex in 1 : NumMFs) {
+            mfStr <- fileText[line]
+            #browser()
+            mfSplit <- unlist(strsplit(mfStr, "[',]"))
+            mfName <- mfSplit[2]
+            mfType <- mfSplit[4]
+            paramSplit <- unlist(strsplit(mfSplit[6], "[][ ]"))
+            paramText <- paste('mfParams=', 'c(', paste(paramSplit[- 1], collapse = ','), ')')
+            eval(parse(text = paramText))
+
+            # now add the membership function to the FIS
+            fis <- addmf(fis, 'input', varIndex, mfName, mfType, mfParams)
+            line <- line + 1
+        }
     }
-  }
 
-  # now for the rules
-  while ( is.na(charmatch('[Rules]', fileText[line])) )
+    # now for the outputs
+    for (varIndex in 1 : NumOutputs) {
+        while (is.na(charmatch('[Output', fileText[line])))
+        line <- line + 1
+
+        # name and range (needs processing)
+        eval(parse(text = fileText[line + 1]))
+        rangeStr <- fileText[line + 2]
+        rangeSplit <- unlist(strsplit(rangeStr, "[][ ]"))
+        rangeText <- paste(rangeSplit[1], 'c(', paste(rangeSplit[- 1], collapse = ','), ')')
+        eval(parse(text = rangeText))
+
+        # now add the variable to the FIS
+        fis <- addvar(fis, 'output', Name, Range)
+
+        # number of membership functions
+        eval(parse(text = fileText[line + 3]))
+        line <- line + 4
+
+        for (MFIndex in 1 : NumMFs) {
+            mfStr <- fileText[line]
+            #browser()
+            mfSplit <- unlist(strsplit(mfStr, "[',]"))
+            mfName <- mfSplit[2]
+            mfType <- mfSplit[4]
+            paramSplit <- unlist(strsplit(mfSplit[6], "[][ ]"))
+            paramText <- paste('mfParams= c(', paste(paramSplit[- 1], collapse = ','), ')')
+            eval(parse(text = paramText))
+
+            # now add the membership function to the FIS
+            fis <- addmf(fis, 'output', varIndex, mfName, mfType, mfParams)
+            line <- line + 1
+        }
+    }
+
+    # now for the rules
+    while (is.na(charmatch('[Rules]', fileText[line])))
     line <- line + 1
-  line <- line + 1
-
-  for ( ruleIndex in 1:NumRules ) {
-    ruleStr <- fileText[line]
-    ruleSplit <- unlist(strsplit(ruleStr, "[ ,():]"))
-    ruleSplit <- ruleSplit[nchar(ruleSplit) > 0]
-    ruleText <- paste('ruleList= c(', paste(ruleSplit, collapse=','), ')')
-    eval(parse(text=ruleText))
-
-    # now add the rule to the FIS
-    fis= addrule(fis, ruleList)
     line <- line + 1
-  }
 
-  fis
+    for (ruleIndex in 1 : NumRules) {
+        ruleStr <- fileText[line]
+        ruleSplit <- unlist(strsplit(ruleStr, "[ ,():]"))
+        ruleSplit <- ruleSplit[nchar(ruleSplit) > 0]
+        ruleText <- paste('ruleList= c(', paste(ruleSplit, collapse = ','), ')')
+        eval(parse(text = ruleText))
+
+        # now add the rule to the FIS
+        fis = addrule(fis, ruleList)
+        line <- line + 1
+    }
+
+    fis
 }
 
 
@@ -658,145 +660,145 @@ readfis <- function(fileName) {
 #' showfis(fis)
 #' @export
 showfis <- function(fis) {
-  NumInputs= length(fis$input)
-  NumOutputs= length(fis$output)
+    NumInputs = length(fis$input)
+    NumOutputs = length(fis$output)
 
-  NumInputMFs= NULL
-  for ( i in 1:NumInputs ) {
-    NumInputMFs[i]= length(fis$input[[i]]$mf)
-  }
-
-  NumOutputMFs= NULL
-  for ( i in 1:NumOutputs ) {
-    NumOutputMFs[i]= length(fis$output[[i]]$mf)
-  }
-
-  NumRules= nrow(fis$rule)
-
-  cat('1.  Name             ', fis$name, '\n')
-  cat('2.  Type             ', fis$type, '\n')
-  cat('3.  Inputs/Outputs   ', '[', NumInputs, NumOutputs, ']', '\n')
-  cat('4.  NumInputMFs      ', '[', NumInputMFs, ']', '\n')
-  cat('5.  NumOutputMFs     ', '[', NumOutputMFs, ']', '\n')
-  cat('6.  NumRules         ', NumRules, '\n')
-  cat('7.  AndMethod        ', fis$andMethod, '\n')
-  cat('8.  OrMethod         ', fis$orMethod, '\n')
-  cat('9.  ImpMethod        ', fis$impMethod, '\n')
-  cat('10. AggMethod        ', fis$aggMethod, '\n')
-  cat('11. DefuzzMethod     ', fis$defuzzMethod, '\n')
-  frow= 11
-
-  if ( NumInputs > 0 ) {
-    for ( i in 1:NumInputs ) {
-      cat(frow+i, '. InLabels          ', fis$input[[i]]$name, '\n', sep='')
-    }
-    frow= frow + i
-  }
-
-  if ( NumOutputs > 0 ) {
-    for ( i in 1:NumOutputs ) {
-      cat(frow+i, '. OutLabels         ', fis$output[[i]]$name, '\n', sep='')
-    }
-    frow= frow + i
-  }
-
-  if ( NumInputs > 0 ) {
-    for ( i in 1:NumInputs ) {
-      cat(frow+i, '. ', sep='');
-      cat('InRange          ', '[', fis$input[[i]]$range, ']', '\n')
-    }
-    frow= frow + i
-  }
-
-  if ( NumOutputs > 0 ) {
-    for ( i in 1:NumOutputs ) {
-      cat(frow+i, '. ', sep='');
-      cat('OutRange         ', '[', fis$output[[i]]$range, ']', '\n')
-    }
-    frow= frow + i
-  }
-
-  if ( NumInputs > 0 ) {
-    for ( i in 1:NumInputs ) {
-      for ( j in 1:NumInputMFs[i] ) {
-        frow= frow + 1
-        cat(frow, '. InMFLabels        ', fis$input[[i]]$mf[[j]]$name, '\n', sep='')
-      }
-    }
-  }
-
-  if ( NumOutputs > 0 ) {
-    for ( i in 1:NumOutputs ) {
-      for ( j in 1:NumOutputMFs[i] ) {
-        frow= frow + 1
-        cat(frow, '. OutMFLabels	      ', fis$output[[i]]$mf[[j]]$name, '\n', sep='')
-      }
-    }
-  }
-
-  if ( NumInputs > 0 ) {
-    for ( i in 1:NumInputs ) {
-      for ( j in 1:NumInputMFs[i] ) {
-        frow= frow + 1
-        cat(frow, '. InMFTypes         ', fis$input[[i]]$mf[[j]]$type, '\n', sep='')
-      }
-    }
-  }
-
-  if ( NumOutputs > 0 ) {
-    for ( i in 1:NumOutputs ) {
-      for ( j in 1:NumOutputMFs[i] ) {
-        frow= frow + 1
-        cat(frow, '. OutMFTypes 	      ', fis$output[[i]]$mf[[j]]$type, '\n', sep='')
-      }
-    }
-  }
-
-  if ( NumInputs > 0 ) {
-    for ( i in 1:NumInputs ) {
-      for ( j in 1:NumInputMFs[i] ) {
-        frow= frow + 1
-        cat(frow, '. ', sep='');
-        cat('InMFParams       ', '[', fis$input[[i]]$mf[[j]]$params, ']', '\n')
-      }
-    }
-  }
-
-  if ( NumOutputs > 0 ) {
-    for ( i in 1:NumOutputs ) {
-      for ( j in 1:NumOutputMFs[i] ) {
-        frow= frow + 1
-        cat(frow, '. ', sep='');
-        cat('OutMFParams      ', '[', fis$output[[i]]$mf[[j]]$params, ']', '\n')
-      }
-    }
-  }
-
-  if ( !is.null(NumRules) ) {
-    for ( i in 1:NumRules ) {
-      frow= frow + 1
-      cat(frow, '. ', sep='');
-      cat('Rule Antecedent   [', fis$rule[i,1:NumInputs], ']', '\n')
+    NumInputMFs = NULL
+    for (i in 1 : NumInputs) {
+        NumInputMFs[i] = length(fis$input[[i]]$mf)
     }
 
-    for ( i in 1:NumRules ) {
-      frow= frow + 1
-      cat(frow, '. ', sep='');
-      cat('Rule Consequent  ', fis$rule[i,(NumInputs+1):(NumInputs+NumOutputs)], '\n')
+    NumOutputMFs = NULL
+    for (i in 1 : NumOutputs) {
+        NumOutputMFs[i] = length(fis$output[[i]]$mf)
     }
 
-    for ( i in 1:NumRules ) {
-      frow= frow + 1
-      cat(frow, '. ', sep='');
-      cat('Rule Weight      ', fis$rule[i,NumInputs+NumOutputs+1], '\n')
+    NumRules = nrow(fis$rule)
+
+    cat('1.  Name             ', fis$name, '\n')
+    cat('2.  Type             ', fis$type, '\n')
+    cat('3.  Inputs/Outputs   ', '[', NumInputs, NumOutputs, ']', '\n')
+    cat('4.  NumInputMFs      ', '[', NumInputMFs, ']', '\n')
+    cat('5.  NumOutputMFs     ', '[', NumOutputMFs, ']', '\n')
+    cat('6.  NumRules         ', NumRules, '\n')
+    cat('7.  AndMethod        ', fis$andMethod, '\n')
+    cat('8.  OrMethod         ', fis$orMethod, '\n')
+    cat('9.  ImpMethod        ', fis$impMethod, '\n')
+    cat('10. AggMethod        ', fis$aggMethod, '\n')
+    cat('11. DefuzzMethod     ', fis$defuzzMethod, '\n')
+    frow = 11
+
+    if (NumInputs > 0) {
+        for (i in 1 : NumInputs) {
+            cat(frow + i, '. InLabels          ', fis$input[[i]]$name, '\n', sep = '')
+        }
+        frow = frow + i
     }
 
-    for ( i in 1:NumRules ) {
-      frow= frow + 1
-      cat(frow, '. ', sep='');
-      cat('Rule Connection  ', fis$rule[i,NumInputs+NumOutputs+2], '\n')
+    if (NumOutputs > 0) {
+        for (i in 1 : NumOutputs) {
+            cat(frow + i, '. OutLabels         ', fis$output[[i]]$name, '\n', sep = '')
+        }
+        frow = frow + i
     }
-  }
+
+    if (NumInputs > 0) {
+        for (i in 1 : NumInputs) {
+            cat(frow + i, '. ', sep = '');
+            cat('InRange          ', '[', fis$input[[i]]$range, ']', '\n')
+        }
+        frow = frow + i
+    }
+
+    if (NumOutputs > 0) {
+        for (i in 1 : NumOutputs) {
+            cat(frow + i, '. ', sep = '');
+            cat('OutRange         ', '[', fis$output[[i]]$range, ']', '\n')
+        }
+        frow = frow + i
+    }
+
+    if (NumInputs > 0) {
+        for (i in 1 : NumInputs) {
+            for (j in 1 : NumInputMFs[i]) {
+                frow = frow + 1
+                cat(frow, '. InMFLabels        ', fis$input[[i]]$mf[[j]]$name, '\n', sep = '')
+            }
+        }
+    }
+
+    if (NumOutputs > 0) {
+        for (i in 1 : NumOutputs) {
+            for (j in 1 : NumOutputMFs[i]) {
+                frow = frow + 1
+                cat(frow, '. OutMFLabels          ', fis$output[[i]]$mf[[j]]$name, '\n', sep = '')
+            }
+        }
+    }
+
+    if (NumInputs > 0) {
+        for (i in 1 : NumInputs) {
+            for (j in 1 : NumInputMFs[i]) {
+                frow = frow + 1
+                cat(frow, '. InMFTypes         ', fis$input[[i]]$mf[[j]]$type, '\n', sep = '')
+            }
+        }
+    }
+
+    if (NumOutputs > 0) {
+        for (i in 1 : NumOutputs) {
+            for (j in 1 : NumOutputMFs[i]) {
+                frow = frow + 1
+                cat(frow, '. OutMFTypes           ', fis$output[[i]]$mf[[j]]$type, '\n', sep = '')
+            }
+        }
+    }
+
+    if (NumInputs > 0) {
+        for (i in 1 : NumInputs) {
+            for (j in 1 : NumInputMFs[i]) {
+                frow = frow + 1
+                cat(frow, '. ', sep = '');
+                cat('InMFParams       ', '[', fis$input[[i]]$mf[[j]]$params, ']', '\n')
+            }
+        }
+    }
+
+    if (NumOutputs > 0) {
+        for (i in 1 : NumOutputs) {
+            for (j in 1 : NumOutputMFs[i]) {
+                frow = frow + 1
+                cat(frow, '. ', sep = '');
+                cat('OutMFParams      ', '[', fis$output[[i]]$mf[[j]]$params, ']', '\n')
+            }
+        }
+    }
+
+    if (! is.null(NumRules)) {
+        for (i in 1 : NumRules) {
+            frow = frow + 1
+            cat(frow, '. ', sep = '');
+            cat('Rule Antecedent   [', fis$rule[i, 1 : NumInputs], ']', '\n')
+        }
+
+        for (i in 1 : NumRules) {
+            frow = frow + 1
+            cat(frow, '. ', sep = '');
+            cat('Rule Consequent  ', fis$rule[i, (NumInputs + 1) : (NumInputs + NumOutputs)], '\n')
+        }
+
+        for (i in 1 : NumRules) {
+            frow = frow + 1
+            cat(frow, '. ', sep = '');
+            cat('Rule Weight      ', fis$rule[i, NumInputs + NumOutputs + 1], '\n')
+        }
+
+        for (i in 1 : NumRules) {
+            frow = frow + 1
+            cat(frow, '. ', sep = '');
+            cat('Rule Connection  ', fis$rule[i, NumInputs + NumOutputs + 2], '\n')
+        }
+    }
 }
 
 
@@ -816,6 +818,23 @@ showfis <- function(fis) {
 #' evalfis(Input_data, fis)
 #' @export
 evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
+
+    # tsk implementation, added by CC, 20/11/2019
+    if (fis$type == 'tsk') {
+        if (! exists("GLOBAL_FIS") || ! identical(fis, .GlobalEnv$GLOBAL_FIS)) {
+            .GlobalEnv$GLOBAL_FIS <- fis
+            .GlobalEnv$GLOBAL_TSK <- anfis.builder(fis)
+        }
+
+        if (is.null(nrow(input_stack))) {
+            input_stack <- matrix(input_stack, nrow = 1)
+        }
+        out_stack <- anfis.eval(.GlobalEnv$GLOBAL_TSK, input_stack)
+
+        return(out_stack)
+    }
+
+
     first <- FALSE
     dir = getwd()
 
@@ -1003,7 +1022,9 @@ evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
     data_n = nrow(input_stack)
 
     # create output stack
-    out_stack = matrix(0, data_n * .GlobalEnv$MF_TYPE, .GlobalEnv$OUT_N)
+    # out_stack = matrix(0, data_n * .GlobalEnv$MF_TYPE, .GlobalEnv$OUT_N)
+    # modified by CC, 19/11/2019
+    out_stack = matrix(0, data_n, .GlobalEnv$OUT_N)
 
     # loop through each input
     for (k in 1 : data_n) {
@@ -1104,9 +1125,9 @@ evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
 
         # Get firing strengths for the rules
         f_str <- matrix(0, .GlobalEnv$RULE_N * .GlobalEnv$MF_TYPE, 1)
-        if (.GlobalEnv$IN_N == 1)
-        f_str = in_mf_value
-        else {
+        if (.GlobalEnv$IN_N == 1) {
+            f_str = in_mf_value
+        } else {
             and_ind = which(.GlobalEnv$AND_OR == 1)
             or_ind = which(.GlobalEnv$AND_OR == 2)
             f_str[and_ind,] =
@@ -1254,8 +1275,10 @@ evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
 
                     # defuzzify each output
                     for (i in 1 : .GlobalEnv$OUT_N) {
-                        out_stack[2 * k - 1, i] = mean(rs[, i])
-                        out_stack[2 * k, i] = rs[1, i] - mean(rs[, i])
+                        # modified by CC, 19/11/2019
+                        # out_stack[2 * k - 1, i] = mean(rs[, i])
+                        # out_stack[2 * k, i] = rs[1, i] - mean(rs[, i])
+                        out_stack[k, i] = mean(rs[, i])
                     }
                 } else {
 
@@ -1315,27 +1338,211 @@ evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
 #' Crisp_value = defuzz(1:10, c(1.5, 5), "centroid")
 #' @export
 defuzz <- function(x, mf, type) {
-    if ( type == "centroid" )
-        if(sum(mf, na.rm=T) != 0) {
-            sum(mf * x, na.rm=T) / sum(mf, na.rm=T)
-        } else {
-            mean(x, na.rm=T)
-        }
-    else if ( type == "bisector" ) {
-        cs= cumsum(mf)
-        a2= sum(mf)/2
-        xs= match(TRUE, cs>a2)
-        x[xs-1] + (a2-cs[xs-1])/mf[xs] + (x[xs]-x[xs-1])/2
-    } else if ( type == "mom" ) {
+    if (type == "centroid")
+    if (sum(mf, na.rm = T) != 0) {
+        sum(mf * x, na.rm = T) / sum(mf, na.rm = T)
+    } else {
+        mean(x, na.rm = T)
+    }
+    else if (type == "bisector") {
+        cs = cumsum(mf)
+        a2 = sum(mf) / 2
+        xs = match(TRUE, cs > a2)
+        x[xs - 1] +
+            (a2 - cs[xs - 1]) / mf[xs] +
+            (x[xs] - x[xs - 1]) / 2
+    } else if (type == "mom") {
         mean(x[which(mf == max(mf))])
-    } else if ( type == "som" ) {
+    } else if (type == "som") {
         x[min(which(mf == max(mf)))]
-    } else if ( type == "lom" ) {
+    } else if (type == "lom") {
         x[max(which(mf == max(mf)))]
     } else {
         NA
     }
 }
+
+
+#############################################
+# IT2 defuzzification - need to go through these
+
+#CENTROID
+#B: 2*M X point_n * OUT_N matrix
+#y: 2*point_n X  OUT_N matrix
+#outs : 2*M x OUT_N
+trCentroid <- function(y, B){
+
+    # M <- nrow(B) %/% 2
+    # point_n <- nrow(y) %/% 2
+    OUT_N <- ncol(y)
+    # out <- matrix(0, nrow(B), OUT_N)
+
+    ff <- rotate2(B, OUT_N)
+    out <- iterative_method(y, ff)
+
+    out
+}
+
+
+#COS : matrix RULE_N*2 x OUT_N
+#f : RULE_N*2 x 1(OUT_N)
+#out: OUT_N*2 x 1
+trCOS <- function(COS, f){
+    tmp <- center_spread(COS)
+    cc <- tmp$c
+    s <- tmp$s
+
+    tmp <- center_spread(f)
+    h <- tmp$c
+    OUT_N <- ncol(COS)
+    delta <- tmp$s
+
+    outs <- matrix(0, 2, OUT_N)
+    for (i in 1 : OUT_N) {
+        tmp <- interval_wtdavg(cc[, i], s[, i], h, delta)
+        outs[1, i] <- tmp$r_out
+        outs[2, i] <- tmp$l_out
+    }
+
+    outs
+}
+
+
+#y : M*2  x OUT_N
+#f : M*2*N  x OUT_N
+#out : 2*N  x OUT_N
+#Used in centroid
+iterative_method <- function(y, f){
+
+    OUT_N <- ncol(y)
+    N <- nrow(f) %/% nrow(y)
+    M <- nrow(y) %/% 2
+
+    tmp <- center_spread(f)
+    h <- tmp$c #N*M x OUT_N
+    delta <- tmp$s  #N*M x OUT_N
+
+    tmp <- center_spread(y)
+    c <- tmp$c
+    s <- tmp$s #c,s : M x OUT_N
+
+    out <- matrix(0, 2 * N, OUT_N)
+    for (i in 1 : OUT_N) {
+        for (j in 0 : (N - 1)) {
+            tmp <- interval_wtdavg(c[, i], s[, i], h[(1 : M) + j * M, i], delta[(1 : M) + j * M, i])
+            out[j + 1, i] <- tmp$r_out
+            out[j + 1 + N, i] <- tmp$l_out
+        }
+    }
+    out
+}
+
+
+#x : 2*N x M matrix
+#$c,$s : N*M matrix
+center_spread <- function(x){
+    N = nrow(x) %/% 2
+    M = ncol(x)
+    cc <- matrix(0, N, M)
+    s <- matrix(0, N, M)
+    for (i in 1 : N) {
+        cc[i,] = (x[i,] + x[i + N,]) / 2
+        s[i,] = (x[i,] - cc[i,])
+    }
+
+    list(c = cc, s = s)
+}
+
+
+#c,s,h,delta are all vetors length M
+interval_wtdavg <- function(c, s, h, delta){
+    lower = h - delta ;
+    upper = h + delta ;
+
+    l_out = adapt(c - s, lower, upper, - 1)$outextreme ;
+    r_out = adapt(c + s, lower, upper, 1)$outextreme ;
+    list(l_out = l_out, r_out = r_out)
+}
+
+
+#OUT_MF : RULE_N*2 X point_n*OUT_N
+#out : RULE_N*2*point_n X OUT_N
+#used in Centroid
+rotate2 <- function(OUT_MF, OUT_N){
+    point_n <- ncol(OUT_MF) %/% OUT_N
+    out <- matrix(0, nrow(OUT_MF) * point_n, OUT_N)
+    for (i in 1 : OUT_N) {
+        tmp <- OUT_MF[, (1 : point_n) + (i - 1) * point_n]
+        #tmp : RULE_N*2 X point_n
+        out[, i] <- t(tmp)
+    }
+    out
+}
+
+
+# Inputs : "ypoint", "lower" and "upper" are all M-dimensional vectors.
+# "ypoint" contains the "y_l"s. "lower" and "upper"
+# contain, respectively, the "w_lower" and "w_upper" values for each
+# weight "w_l". If "maxflag > 0" (scalar), "S" is maximized, else
+# it is minimized.
+# Used in interval_wtdavg
+adapt <- function(ypoint, lower, upper, maxflag){
+    tmp <- sort(ypoint, index = TRUE)
+    z <- tmp$x
+    ix <- tmp$ix
+    lower_sort <- lower[ix]
+    upper_sort <- upper[ix]
+    lz <- length(z)
+
+    hl = (lower_sort + upper_sort) / 2 ;
+    S = sum(z * hl) / sum(hl) ;   # starting point
+
+    eps = 1e-5 ;   # small quantity to avoid floating point equality problems
+
+    count = 0 ;
+    theta = hl ;
+    S_new = S + 10 * eps ;
+
+    if ((abs(S - z[1]) < eps) | (abs(S - z[lz]) < eps)) {
+        outextreme = S ;
+    } else {
+        while (abs(S - S_new) > eps) {
+            count = count + 1;
+
+            if (count > 1)
+            S = S_new ;
+
+            in1 = which(z > (S - eps)) ;
+            min1 = min(in1) ;
+
+            if (min1 > 2) {
+                in2 = 1 : (min1 - 1) ;
+            } else {
+                in2 = 1;
+            }
+
+            if (maxflag > 0) {
+                theta[in1] = upper_sort[in1] ;
+                theta[in2] = lower_sort[in2] ;
+            } else {
+                theta[in1] = lower_sort[in1] ;
+                theta[in2] = upper_sort[in2] ;
+
+
+                # To avoid division by zero if all lower_sort=0
+                if (abs(S - z[min1]) < eps)
+                theta[min1] = upper_sort[min1] ;
+            } #end if maxflag
+
+
+            S_new = sum(z * theta) / sum(theta) ;
+        } #end while
+        outextreme = S_new ;
+    } # end if
+
+    list(outextreme = outextreme, count = count, theta = theta)
+}
+
 
 #' @title TSK FIS builder
 #' @description
@@ -1353,20 +1560,20 @@ defuzz <- function(x, mf, type) {
 #' @export
 
 fis.builder <- function(x.range, input.num, input.mf.num, input.mf.type, rule.num=prod(input.mf.num), rule.which=NULL, defuzzMethod="default", params.ante, params.conse) {
-    fis <- newfis('newFIS', fisType="tsk", andMethod="prod", orMethod="max", impMethod="min", aggMethod="max", defuzzMethod=defuzzMethod)
+    fis <- newfis('newFIS', fisType = "tsk", andMethod = "prod", orMethod = "max", impMethod = "min", aggMethod = "max", defuzzMethod = defuzzMethod)
 
-    if(!is.null(rule.which)) {
+    if (! is.null(rule.which)) {
         rule.which <- sort(unique(rule.which))
-        if(rule.num != length(rule.which) || !all(rule.which %in% 1:prod(input.mf.num)))
+        if (rule.num != length(rule.which) || ! all(rule.which %in% 1 : prod(input.mf.num)))
         {
             stop("rule.which is not right!")
         }
     }
 
     k <- 1
-    x.range <- matrix(x.range, ncol=2)
-    for(i in 1:input.num) {
-        if(nrow(x.range) == 1) {
+    x.range <- matrix(x.range, ncol = 2)
+    for (i in 1 : input.num) {
+        if (nrow(x.range) == 1) {
             input.range <- c(x.range)
         } else {
             input.range <- x.range[i,]
@@ -1375,7 +1582,7 @@ fis.builder <- function(x.range, input.num, input.mf.num, input.mf.type, rule.nu
         fis <- addvar(fis, 'input', paste0('X', i), input.range, 'singleton.fuzzification')
         #fis <- addvar(fis, 'input', paste0('X', i), input.range, 'it2gbell.fuzzification', init.params.it2gbell(input.range,0)[1,])
 
-        if(missing(params.ante)) {
+        if (missing(params.ante)) {
             params.gbell <- init.params.gbell(input.range, input.mf.num[i])
             params.it2gbell <- init.params.it2gbell(input.range, input.mf.num[i])
         } else {
@@ -1383,9 +1590,9 @@ fis.builder <- function(x.range, input.num, input.mf.num, input.mf.type, rule.nu
             params.it2gbell <- params.gbell
         }
 
-        for(j in 1:input.mf.num[i]) {
+        for (j in 1 : input.mf.num[i]) {
             #if(input.mf.type[i, j] == 1) {
-            if(input.mf.type == "T1") {
+            if (input.mf.type == "T1") {
                 fis <- addmf(fis, 'input', i, paste0('A', k), 'gbellmf', params.gbell[j,])
             } else {
                 fis <- addmf(fis, 'input', i, paste0('A', k), 'it2gbellmf', params.it2gbell[j,])
@@ -1396,24 +1603,24 @@ fis.builder <- function(x.range, input.num, input.mf.num, input.mf.type, rule.nu
 
     fis <- addvar(fis, 'output', 'Y', NULL, 'defuzzification.method')
 
-    if(missing(params.conse)) {
-        params.linearmf <-matrix(0, nrow=rule.num, ncol=input.num+1)
+    if (missing(params.conse)) {
+        params.linearmf <- matrix(0, nrow = rule.num, ncol = input.num + 1)
     } else {
         params.linearmf <- params.conse
     }
 
-    for(i in 1:rule.num) {
+    for (i in 1 : rule.num) {
         fis <- addmf(fis, 'output', 1, paste0('C', i), 'linearmf', params.linearmf[i,])
     }
 
     rule.ante <- NULL
-    rule.ante <- expand.grid(lapply(input.mf.num,seq))
-    if(is.null(rule.which)) {
-        rule <- as.matrix(rule.ante)[sort(sample(1:nrow(rule.ante), rule.num)),]
+    rule.ante <- expand.grid(lapply(input.mf.num, seq))
+    if (is.null(rule.which)) {
+        rule <- as.matrix(rule.ante)[sort(sample(1 : nrow(rule.ante), rule.num)),]
     } else {
         rule <- as.matrix(rule.ante)[rule.which,]
     }
-    rule <- cbind(rule, 1:rule.num, 0, 1)
+    rule <- cbind(rule, 1 : rule.num, 0, 1)
     colnames(rule) <- NULL
 
     fis <- addrule(fis, as.matrix(rule))
@@ -1503,6 +1710,54 @@ anfis.tipper <- function() {
 }
 
 
+#' Produces an example fis object (TSK type), which can also be optimised by ANFIS.
+#'
+#' A function used primarily for example purposes, it creates a fis with two input (service & food), output variables (tip) and their membership functions.
+#'
+#' @return A fis is return
+#' @examples
+#' fis <- tipper.tsk()
+#' @export
+tipper.tsk <- function() {
+    fis = newfis('tipper', fisType = 'tsk', andMethod = 'prod')
+    # fis = newfis('tipper', fisType = 'tsk')
+
+    fis = addvar(fis, 'input', 'service', c(0, 10), 'singleton.fuzzification')
+    # fis= addvar(fis, 'input', 'service', c(0, 10), 'it2gbell.fuzzification', c(1,2,3))
+
+    fis = addvar(fis, 'input', 'food', c(0, 15), 'singleton.fuzzification')
+    #fis= addvar(fis, 'input', 'food', c(0, 15), 'it2gbell.fuzzification', c(1,2,3))
+
+    fis = addvar(fis, 'output', 'tip', c(0, 30))
+    #fis= addvar(fis, 'output', 'test', c(0, 100))
+
+    fis = addmf(fis, 'input', 1, 'poor', 'gbellmf', c(1, 1.5, 3, 1))
+
+    fis = addmf(fis, 'input', 1, 'good', 'gbellmf', c(1, 1.5, 5, 1))
+    #fis= addmf(fis, 'input', 1, 'good', 'it2gbellmf', c(1, 2, 1.5, 5, 1))
+
+    fis = addmf(fis, 'input', 1, 'excellent', 'gbellmf', c(2, 1.5, 10, 1))
+    #fis= addmf(fis, 'input', 1, 'excellent', 'it2gbellmf', c(1, 2, 1.5, 10, 1))
+
+    fis = addmf(fis, 'input', 2, 'rancid', 'gbellmf', c(1, 2, 3, 1))
+    #fis= addmf(fis, 'input', 2, 'rancid', 'it2gbellmf', c(1, 2, 2, 3, 1))
+
+    fis = addmf(fis, 'input', 2, 'delicious', 'gbellmf', c(4, 10, 10, 1))
+    #fis= addmf(fis, 'input', 2, 'delicious', 'it2gbellmf', c(3, 4, 10, 10, 1))
+
+    fis = addmf(fis, 'output', 1, 'cheap', 'linearmf', c(0, 0.5, 0.5))
+    fis = addmf(fis, 'output', 1, 'average', 'linearmf', c(10, 0.5, 0.5))
+    fis = addmf(fis, 'output', 1, 'generous', 'linearmf', c(20, 0.5, 0.5))
+    #fis= addmf(fis, 'output', 1, 'generous', 'itlinearmf', c(20, 25, 0.5, 0.5))
+
+    rl = rbind(c(1, 1, 1, 1, 1), c(2, 0, 2, 1, 1), c(3, 2, 3, 1, 1))
+    #rl = rbind(c(1,1,1,1,1,2), c(2,0,2,2,1,1), c(3,2,3,3,1,2))
+    fis = addrule(fis, rl)
+
+    fis
+}
+
+
 #' Produces an example it2fis object for Waiter-Tipping.
 #'
 #' A function used primarily for example purposes, it creates a it2 fis with two input (service & food), output variables (tip) and their membership functions.
@@ -1513,7 +1768,7 @@ anfis.tipper <- function() {
 #' @export
 it2tipper <- function() {
 
-    fis = newfis('tipper')
+    fis = newfis('tipper', mfType = 'it2')
 
     fis = addvar(fis, 'input', 'service', c(0, 10), 'singleton.fuzzification')
     fis = addvar(fis, 'input', 'food', c(0, 15), 'it2gbell.fuzzification', c(1, 2, 3))
@@ -1549,143 +1804,132 @@ it2tipper <- function() {
 #' @export
 tipperGUI = function(){
 
-  ui = fluidPage(
-
-    titlePanel(title=h1("Type-1 Fuzzy Logic : Waiter-Tipping", align="center")),
+    ui = fluidPage(
+    titlePanel(title = h1("Type-1 Fuzzy Logic : Waiter-Tipping", align = "center")),
     br(),
     sidebarLayout(
-      sidebarPanel((h3("Parameter ")),
-
-                   selectInput("service", "Choose a MF type for input 'Service':",
-                               list("Trapeziod", "Gaussian", "Tringular")),
-                   selectInput("food", "Choose a MF type for input 'Food':",
-                               list("Trapeziod", "Gaussian", "Tringular")),
-                   selectInput("tip", "Choose a MF type for output 'Tip':",
-                               list("Trapeziod", "Gaussian", "Tringular")),
-
-                   radioButtons("out", "Display MF ",
-                                list("Service" = 1,
-                                     "Food" = 2,
-                                     "Tip" = 3))
-
-      ),
-
-      mainPanel(
-
-        tabsetPanel(
-          type="tab",
-          tabPanel("Membership Function",  plotOutput("plot1")),
-          tabPanel("Rules", verbatimTextOutput("out"))
-          #  tabPanel("Output", uiOutput("output1"))
-        )
-
-      )
-
+    sidebarPanel((h3("Parameter ")),
+    selectInput("service", "Choose a MF type for input 'Service':",
+    list("Trapeziod", "Gaussian", "Tringular")),
+    selectInput("food", "Choose a MF type for input 'Food':",
+    list("Trapeziod", "Gaussian", "Tringular")),
+    selectInput("tip", "Choose a MF type for output 'Tip':",
+    list("Trapeziod", "Gaussian", "Tringular")),
+    radioButtons("out", "Display MF ",
+    list("Service" = 1,
+    "Food" = 2,
+    "Tip" = 3))
+    ),
+    mainPanel(
+    tabsetPanel(
+    type = "tab",
+    tabPanel("Membership Function", plotOutput("plot1")),
+    tabPanel("Rules", verbatimTextOutput("out"))
+    #  tabPanel("Output", uiOutput("output1"))
+    )
+    )
+    )
     )
 
 
 
-  )
+    server = function(input, output){
+
+        output$plot1 <- renderPlot({
+
+            fis = newfis('tipper')
+
+            fis = addvar(fis, 'input', 'service', c(0, 10))
+            fis = addvar(fis, 'input', 'food', c(0, 10))
+            fis = addvar(fis, 'output', 'tip', c(0, 30))
+
+            # MF type for service
+            if (input$service == "Trapeziod")
+            {
+                fis = addmf(fis, 'input', 1, 'poor', 'trapmf', c(- 2.844, - 0.6886, 0.6886, 2.844))
+                fis = addmf(fis, 'input', 1, 'good', 'trapmf', c(2.156, 4.311, 5.689, 7.844))
+                fis = addmf(fis, 'input', 1, 'excellent', 'trapmf', c(7.156, 9.311, 10.69, 12.84))
+            }
+            else if (input$service == "Gaussian")
+            {
+                fis = addmf(fis, 'input', 1, 'poor', 'gaussmf', c(1.5, 0))
+                fis = addmf(fis, 'input', 1, 'good', 'gaussmf', c(1.5, 5))
+                fis = addmf(fis, 'input', 1, 'excellent', 'gaussmf', c(1.5, 10))
+            }
+            else if (input$service == "Tringular")
+            {
+                fis = addmf(fis, 'input', 1, 'poor', 'trimf', c(- 3.532, 0, 3.532))
+                fis = addmf(fis, 'input', 1, 'good', 'trimf', c(1.468, 5, 8.532))
+                fis = addmf(fis, 'input', 1, 'excellent', 'trimf', c(6.468, 10, 13.53))
+            }
+
+            # MF type for food
+            if (input$food == "Trapeziod")
+            {
+                fis = addmf(fis, 'input', 2, 'rancid', 'trapmf', c(0, 0, 1, 3))
+                fis = addmf(fis, 'input', 2, 'delicious', 'trapmf', c(7, 9, 10, 10))
+            }
+            else if (input$food == "Gaussian")
+            {
+                fis = addmf(fis, 'input', 2, 'rancid', 'gaussmf', c(1.189, 0.6))
+                fis = addmf(fis, 'input', 2, 'delicious', 'gaussmf', c(1.172, 9.4))
+            }
+            else if (input$food == "Tringular")
+            {
+                fis = addmf(fis, 'input', 2, 'rancid', 'trimf', c(- 2.2, 0.6001, 3.4))
+                fis = addmf(fis, 'input', 2, 'delicious', 'trimf', c(6.639, 9.4, 12.16))
+            }
+
+            # MF type for tip
+            if (input$tip == "Trapeziod")
+            {
+                fis = addmf(fis, 'output', 1, 'cheap', 'trapmf', c(0.5, 4.5, 5.5, 9.5))
+                fis = addmf(fis, 'output', 1, 'average', 'trapmf', c(10.5, 14.5, 15.5, 19.5))
+                fis = addmf(fis, 'output', 1, 'generous', 'trapmf', c(20.5, 24.5, 25.5, 29.5))
+            }
+            else if (input$tip == "Gaussian")
+            {
+                fis = addmf(fis, 'output', 1, 'cheap', 'gaussmf', c(2.123, 5))
+                fis = addmf(fis, 'output', 1, 'average', 'gaussmf', c(2.123, 15))
+                fis = addmf(fis, 'output', 1, 'generous', 'gaussmf', c(2.123, 25))
+            }
+            else if (input$tip == "Tringular")
+            {
+                fis = addmf(fis, 'output', 1, 'cheap', 'trimf', c(0, 5, 10))
+                fis = addmf(fis, 'output', 1, 'average', 'trimf', c(10, 15, 20))
+                fis = addmf(fis, 'output', 1, 'generous', 'trimf', c(20, 25, 30))
+            }
 
 
+            #add rules
+            rl = rbind(c(1, 1, 1, 1, 2), c(2, 0, 2, 1, 1), c(3, 2, 3, 1, 2))
+            fis = addrule(fis, rl)
 
-  server = function(input,output){
+            # showrules(fis)
 
-    output$plot1 <- renderPlot({
+            if (input$out == 1)
+            {
+                plotmf(fis, "input", 1, main = "Membership function plots")
+            }
+            else if (input$out == 2)
+            {
+                plotmf(fis, "input", 2, main = "Membership function plots")
+            }
+            else if (input$out == 3)
+            {
+                plotmf(fis, "output", 1, main = "Membership function plots")
+            }
+        })
 
-      fis=newfis('tipper')
-
-      fis= addvar(fis, 'input', 'service', c(0, 10))
-      fis= addvar(fis, 'input', 'food', c(0, 10))
-      fis= addvar(fis, 'output', 'tip', c(0, 30))
-
-      # MF type for service
-      if ( input$service == "Trapeziod")
-      {
-        fis= addmf(fis, 'input', 1, 'poor', 'trapmf', c(-2.844, -0.6886, 0.6886, 2.844))
-        fis= addmf(fis, 'input', 1, 'good', 'trapmf', c(2.156, 4.311, 5.689, 7.844))
-        fis= addmf(fis, 'input', 1, 'excellent', 'trapmf', c(7.156, 9.311, 10.69, 12.84))
-      }
-      else if ( input$service == "Gaussian")
-      {
-        fis= addmf(fis, 'input', 1, 'poor', 'gaussmf', c(1.5,0))
-        fis= addmf(fis, 'input', 1, 'good', 'gaussmf', c(1.5,5))
-        fis= addmf(fis, 'input', 1, 'excellent', 'gaussmf', c(1.5,10))
-      }
-      else if ( input$service == "Tringular")
-      {
-        fis= addmf(fis, 'input', 1, 'poor', 'trimf', c(-3.532, 0, 3.532))
-        fis= addmf(fis, 'input', 1, 'good', 'trimf', c(1.468, 5, 8.532))
-        fis= addmf(fis, 'input', 1, 'excellent', 'trimf', c(6.468, 10, 13.53))
-      }
-
-      # MF type for food
-      if ( input$food == "Trapeziod")
-      {
-        fis= addmf(fis, 'input', 2, 'rancid', 'trapmf', c(0, 0, 1, 3))
-        fis= addmf(fis, 'input', 2, 'delicious', 'trapmf', c(7, 9, 10, 10))
-      }
-      else if ( input$food == "Gaussian")
-      {
-        fis= addmf(fis, 'input', 2, 'rancid', 'gaussmf', c(1.189, 0.6))
-        fis= addmf(fis, 'input', 2, 'delicious', 'gaussmf', c(1.172, 9.4))
-      }
-      else if ( input$food == "Tringular")
-      {
-        fis= addmf(fis, 'input', 2, 'rancid', 'trimf', c(-2.2, 0.6001, 3.4))
-        fis= addmf(fis, 'input', 2, 'delicious', 'trimf', c(6.639, 9.4, 12.16))
-      }
-
-      # MF type for tip
-      if ( input$tip == "Trapeziod")
-      {
-        fis= addmf(fis, 'output', 1, 'cheap', 'trapmf', c(0.5, 4.5, 5.5, 9.5))
-        fis= addmf(fis, 'output', 1, 'average', 'trapmf', c(10.5, 14.5, 15.5, 19.5))
-        fis= addmf(fis, 'output', 1, 'generous', 'trapmf', c(20.5, 24.5, 25.5, 29.5))
-      }
-      else if ( input$tip == "Gaussian")
-      {
-        fis= addmf(fis, 'output', 1, 'cheap', 'gaussmf', c(2.123, 5))
-        fis= addmf(fis, 'output', 1, 'average', 'gaussmf', c(2.123, 15))
-        fis= addmf(fis, 'output', 1, 'generous', 'gaussmf', c(2.123, 25))
-      }
-      else if ( input$tip == "Tringular")
-      {
-        fis= addmf(fis, 'output', 1, 'cheap', 'trimf', c(0, 5, 10))
-        fis= addmf(fis, 'output', 1, 'average', 'trimf', c(10, 15, 20))
-        fis= addmf(fis, 'output', 1, 'generous', 'trimf', c(20, 25, 30))
-      }
+        output$out = renderPrint({
+            fis = tipper()
+            showrule(fis)
+            #  evalfis(c(1,2,5), fis)
+        })
+    }
 
 
-      #add rules
-      rl = rbind(c(1,1,1,1,2), c(2,0,2,1,1), c(3,2,3,1,2))
-      fis= addrule(fis, rl)
-
-      # showrules(fis)
-
-      if (input$out == 1)
-      {
-        plotmf(fis, "input",1, main = "Membership function plots")
-      }
-      else if (input$out == 2)
-      {
-        plotmf(fis, "input",2, main = "Membership function plots")
-      }
-      else if (input$out == 3)
-      {
-        plotmf(fis, "output",1, main = "Membership function plots")
-      }
-    })
-
-    output$out = renderPrint({
-      fis = tipper()
-      showrule(fis)
-      #  evalfis(c(1,2,5), fis)
-    })
-  }
-
-
-  shinyApp(ui = ui, server = server)
+    shinyApp(ui = ui, server = server)
 }
 
 #' Graphic User Interface for Waiter-Tipping (another style)
@@ -1701,363 +1945,330 @@ tipperGUI = function(){
 tipperGUI2 = function(){
 
 
-  ui = fluidPage(
-
-    titlePanel(title=h1("Type-1 Fuzzy Logic : Waiter-Tipping", align="center")),
+    ui = fluidPage(
+    titlePanel(title = h1("Type-1 Fuzzy Logic : Waiter-Tipping", align = "center")),
     br(),
     sidebarLayout(
-      sidebarPanel(
-        radioButtons("out", "Please Choose Variable : ",
-                     list("Service" = 1,
-                          "Food" = 2,
-                          "Tip" = 3)),
-        conditionalPanel(
-          condition = "input.out == 1",
-          selectInput("service", "Choose a MF type for input 'Service':",
-                      list("Trapeziod", "Gaussian", "Tringular")),
-          conditionalPanel(
-            condition = "input.service == 'Trapeziod'",
-            selectInput("out1", "Linguistic Variable':",
-                        list("Poor", "Good", "Excellent")),
-            conditionalPanel(
-              condition = "input.out1 == 'Poor'",
-              sliderInput("a1","A",min = 0, max = 10, value = -2.844, step=0.1),
-              sliderInput("b1","B",min = 0, max = 10, value = -0.6886, step=0.1),
-              sliderInput("c1","C",min = 0, max = 10, value = 0.6886, step=0.1),
-              sliderInput("d1","D",min = 0, max = 10, value = 2.844, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out1 == 'Good'",
-              sliderInput("a2","A",min = 0, max = 10, value = 2.156, step=0.1),
-              sliderInput("b2","B",min = 0, max = 10, value = 4.311, step=0.1),
-              sliderInput("c2","C",min = 0, max = 10, value = 5.689, step=0.1),
-              sliderInput("d2","D",min = 0, max = 10, value = 7.844, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out1 == 'Excellent'",
-              sliderInput("a3","A",min = 0, max = 10, value = 7.156, step=0.1),
-              sliderInput("b3","B",min = 0, max = 10, value = 9.311, step=0.1),
-              sliderInput("c3","C",min = 0, max = 10, value = 10.69, step=0.1),
-              sliderInput("d3","D",min = 0, max = 10, value = 12.84, step=0.1)
-            )
-          ),
-          conditionalPanel(
-            condition = "input.service == 'Gaussian'",
-            selectInput("out2", "Linguistic Variable':",
-                        list("Poor", "Good", "Excellent")),
-            conditionalPanel(
-              condition = "input.out2 == 'Poor'",
-              sliderInput("g1",  "Mean", min=0, max=10, value=1.5, step=0.1),
-              sliderInput("g2",  "Spread", min=0, max=10, value=0, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out2 == 'Good'",
-              sliderInput("g3",  "Mean", min=0, max=10, value=1.5, step=0.1),
-              sliderInput("g4",  "Spread", min=0, max=10, value=5, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out2 == 'Excellent'",
-              sliderInput("g5",  "Mean", min=0, max=10, value=1.5, step=0.1),
-              sliderInput("g6",  "Spread", min=0, max=10, value=10, step=0.1)
-            )
-          ),
-          conditionalPanel(
-            condition = "input.service == 'Tringular'",
-            selectInput("out3", "Linguistic Variable':",
-                        list("Poor", "Good", "Excellent")),
-            conditionalPanel(
-              condition = "input.out3 == 'Poor'",
-              sliderInput("t1",  "Start", min=0, max=10, value=-3.532, step=0.1),
-              sliderInput("t2",  "Peak", min=0, max=10, value=0, step=0.1),
-              sliderInput("t3",  "Stop", min=0, max=10, value=3.532, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out3 == 'Good'",
-              sliderInput("t4",  "Start", min=0, max=10, value=1.468, step=0.1),
-              sliderInput("t5",  "Peak", min=0, max=10, value=5, step=0.1),
-              sliderInput("t6",  "Stop", min=0, max=10, value=8.532, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out3 == 'Excellent'",
-              sliderInput("t7",  "Start", min=0, max=10, value=6.468, step=0.1),
-              sliderInput("t8",  "Peak", min=0, max=10, value=10, step=0.1),
-              sliderInput("t9",  "Stop", min=0, max=10, value=13.53, step=0.1)
-            )
-          )
-
-        ),
-
-        conditionalPanel(
-          condition = "input.out == 2",
-          selectInput("food", "Choose a MF type for input 'Food':",
-                      list("Trapeziod", "Gaussian", "Tringular")),
-          conditionalPanel(
-            condition = "input.food == 'Trapeziod'",
-            selectInput("out4", "Linguistic Variable':",
-                        list("Rancid", "Delicious")),
-            conditionalPanel(
-              condition = "input.out4 == 'Rancid'",
-              sliderInput("a4","A",min = 0, max = 10, value = 0, step=0.1),
-              sliderInput("b4","B",min = 0, max = 10, value = 0, step=0.1),
-              sliderInput("c4","C",min = 0, max = 10, value = 1, step=0.1),
-              sliderInput("d4","D",min = 0, max = 10, value = 3, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out4 == 'Delicious'",
-              sliderInput("a5","A",min = 0, max = 10, value = 7, step=0.1),
-              sliderInput("b5","B",min = 0, max = 10, value = 9, step=0.1),
-              sliderInput("c5","C",min = 0, max = 10, value = 10, step=0.1),
-              sliderInput("d5","D",min = 0, max = 10, value = 10, step=0.1)
-            )
-
-
-          ),
-          conditionalPanel(
-            condition = "input.food == 'Gaussian'",
-            selectInput("out5", "Linguistic Variable':",
-                        list("Rancid", "Delicious")),
-            conditionalPanel(
-              condition = "input.out5 == 'Rancid'",
-              sliderInput("g7",  "Mean", min=0, max=10, value=1.189, step=0.1),
-              sliderInput("g8",  "Spread", min=0, max=10, value=0.6, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out5 == 'Delicious'",
-              sliderInput("g9",  "Mean", min=0, max=10, value=1.172, step=0.1),
-              sliderInput("g10",  "Spread", min=0, max=10, value=9.4, step=0.1)
-            )
-
-
-          ),
-          conditionalPanel(
-            condition = "input.food == 'Tringular'",
-            selectInput("out6", "Linguistic Variable':",
-                        list("Rancid", "Delicious")),
-            conditionalPanel(
-              condition = "input.out6 == 'Rancid'",
-              sliderInput("t10",  "Start", min=0, max=10, value=-2.2, step=0.1),
-              sliderInput("t11",  "Peak", min=0, max=10, value=0.6001, step=0.1),
-              sliderInput("t12",  "Stop", min=0, max=10, value=3.4, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out6 == 'Delicious'",
-              sliderInput("t13",  "Start", min=0, max=10, value=6.639, step=0.1),
-              sliderInput("t14",  "Peak", min=0, max=10, value=9.4, step=0.1),
-              sliderInput("t15",  "Stop", min=0, max=10, value=12.16, step=0.1)
-            )
-
-
-          )
-
-
-
-
-        ),
-
-        conditionalPanel(
-          condition = "input.out == 3",
-          selectInput("tip", "Choose a MF type for output 'Tip':",
-                      list("Trapeziod", "Gaussian", "Tringular")),
-          conditionalPanel(
-            condition = "input.tip == 'Trapeziod'",
-            selectInput("out7", "Linguistic Variable':",
-                        list("Cheap", "Average", "Generous")),
-            conditionalPanel(
-              condition = "input.out7 == 'Cheap'",
-              sliderInput("a6","A",min = 0, max = 30, value = 0.5, step=0.1),
-              sliderInput("b6","B",min = 0, max = 30, value = 4.5, step=0.1),
-              sliderInput("c6","C",min = 0, max = 30, value = 5.5, step=0.1),
-              sliderInput("d6","D",min = 0, max = 30, value = 9.5, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out7 == 'Average'",
-              sliderInput("a7","A",min = 0, max = 30, value = 10.5, step=0.1),
-              sliderInput("b7","B",min = 0, max = 30, value = 14.5, step=0.1),
-              sliderInput("c7","C",min = 0, max = 30, value = 15.5, step=0.1),
-              sliderInput("d7","D",min = 0, max = 30, value = 19.5, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out7 == 'Generous'",
-              sliderInput("a8","A",min = 0, max = 30, value = 20.5, step=0.1),
-              sliderInput("b8","B",min = 0, max = 30, value = 24.5, step=0.1),
-              sliderInput("c8","C",min = 0, max = 30, value = 25.5, step=0.1),
-              sliderInput("d8","D",min = 0, max = 30, value = 29.5, step=0.1)
-            )
-
-          ),
-          conditionalPanel(
-            condition = "input.tip == 'Gaussian'",
-            selectInput("out8", "Linguistic Variable':",
-                        list("Cheap", "Average", "Generous")),
-            conditionalPanel(
-              condition = "input.out8 == 'Cheap'",
-              sliderInput("g11",  "Mean", min=0, max=30, value=2.123, step=0.1),
-              sliderInput("g12",  "Spread", min=0, max=30, value=5, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out8 == 'Average'",
-              sliderInput("g13",  "Mean", min=0, max=30, value=2.123, step=0.1),
-              sliderInput("g14",  "Spread", min=0, max=30, value=15, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out8 == 'Generous'",
-              sliderInput("g15",  "Mean", min=0, max=30, value=2.123, step=0.1),
-              sliderInput("g16",  "Spread", min=0, max=30, value=25, step=0.1)
-            )
-
-          ),
-          conditionalPanel(
-            condition = "input.tip == 'Tringular'",
-            selectInput("out9", "Linguistic Variable':",
-                        list("Cheap", "Average", "Generous")),
-            conditionalPanel(
-              condition = "input.out9 == 'Cheap'",
-              sliderInput("t16",  "Start", min=0, max=30, value=0, step=0.1),
-              sliderInput("t17",  "Peak", min=0, max=30, value=5, step=0.1),
-              sliderInput("t18",  "Stop", min=0, max=30, value=10, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out9 == 'Average'",
-              sliderInput("t19",  "Start", min=0, max=30, value=10, step=0.1),
-              sliderInput("t20",  "Peak", min=0, max=30, value=15, step=0.1),
-              sliderInput("t21",  "Stop", min=0, max=30, value=20, step=0.1)
-            ),
-            conditionalPanel(
-              condition = "input.out9 == 'Generous'",
-              sliderInput("t22",  "Start", min=0, max=30, value=20, step=0.1),
-              sliderInput("t23",  "Peak", min=0, max=30, value=25, step=0.1),
-              sliderInput("t24",  "Stop", min=0, max=30, value=30, step=0.1)
-            )
-
-
-          )
-
-
-
-        )
-
-
-
-
-      ),
-
-      mainPanel(
-
-        tabsetPanel(
-          type="tab",
-          tabPanel("Membership Function",  plotOutput("plot1")),
-          tabPanel("Rules", verbatimTextOutput("out"))
-          #  tabPanel("Output", uiOutput("output1"))
-        )
-
-      )
-
+    sidebarPanel(
+    radioButtons("out", "Please Choose Variable : ",
+    list("Service" = 1,
+    "Food" = 2,
+    "Tip" = 3)),
+    conditionalPanel(
+    condition = "input.out == 1",
+    selectInput("service", "Choose a MF type for input 'Service':",
+    list("Trapeziod", "Gaussian", "Tringular")),
+    conditionalPanel(
+    condition = "input.service == 'Trapeziod'",
+    selectInput("out1", "Linguistic Variable':",
+    list("Poor", "Good", "Excellent")),
+    conditionalPanel(
+    condition = "input.out1 == 'Poor'",
+    sliderInput("a1", "A", min = 0, max = 10, value = - 2.844, step = 0.1),
+    sliderInput("b1", "B", min = 0, max = 10, value = - 0.6886, step = 0.1),
+    sliderInput("c1", "C", min = 0, max = 10, value = 0.6886, step = 0.1),
+    sliderInput("d1", "D", min = 0, max = 10, value = 2.844, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out1 == 'Good'",
+    sliderInput("a2", "A", min = 0, max = 10, value = 2.156, step = 0.1),
+    sliderInput("b2", "B", min = 0, max = 10, value = 4.311, step = 0.1),
+    sliderInput("c2", "C", min = 0, max = 10, value = 5.689, step = 0.1),
+    sliderInput("d2", "D", min = 0, max = 10, value = 7.844, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out1 == 'Excellent'",
+    sliderInput("a3", "A", min = 0, max = 10, value = 7.156, step = 0.1),
+    sliderInput("b3", "B", min = 0, max = 10, value = 9.311, step = 0.1),
+    sliderInput("c3", "C", min = 0, max = 10, value = 10.69, step = 0.1),
+    sliderInput("d3", "D", min = 0, max = 10, value = 12.84, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.service == 'Gaussian'",
+    selectInput("out2", "Linguistic Variable':",
+    list("Poor", "Good", "Excellent")),
+    conditionalPanel(
+    condition = "input.out2 == 'Poor'",
+    sliderInput("g1", "Mean", min = 0, max = 10, value = 1.5, step = 0.1),
+    sliderInput("g2", "Spread", min = 0, max = 10, value = 0, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out2 == 'Good'",
+    sliderInput("g3", "Mean", min = 0, max = 10, value = 1.5, step = 0.1),
+    sliderInput("g4", "Spread", min = 0, max = 10, value = 5, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out2 == 'Excellent'",
+    sliderInput("g5", "Mean", min = 0, max = 10, value = 1.5, step = 0.1),
+    sliderInput("g6", "Spread", min = 0, max = 10, value = 10, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.service == 'Tringular'",
+    selectInput("out3", "Linguistic Variable':",
+    list("Poor", "Good", "Excellent")),
+    conditionalPanel(
+    condition = "input.out3 == 'Poor'",
+    sliderInput("t1", "Start", min = 0, max = 10, value = - 3.532, step = 0.1),
+    sliderInput("t2", "Peak", min = 0, max = 10, value = 0, step = 0.1),
+    sliderInput("t3", "Stop", min = 0, max = 10, value = 3.532, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out3 == 'Good'",
+    sliderInput("t4", "Start", min = 0, max = 10, value = 1.468, step = 0.1),
+    sliderInput("t5", "Peak", min = 0, max = 10, value = 5, step = 0.1),
+    sliderInput("t6", "Stop", min = 0, max = 10, value = 8.532, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out3 == 'Excellent'",
+    sliderInput("t7", "Start", min = 0, max = 10, value = 6.468, step = 0.1),
+    sliderInput("t8", "Peak", min = 0, max = 10, value = 10, step = 0.1),
+    sliderInput("t9", "Stop", min = 0, max = 10, value = 13.53, step = 0.1)
+    )
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 2",
+    selectInput("food", "Choose a MF type for input 'Food':",
+    list("Trapeziod", "Gaussian", "Tringular")),
+    conditionalPanel(
+    condition = "input.food == 'Trapeziod'",
+    selectInput("out4", "Linguistic Variable':",
+    list("Rancid", "Delicious")),
+    conditionalPanel(
+    condition = "input.out4 == 'Rancid'",
+    sliderInput("a4", "A", min = 0, max = 10, value = 0, step = 0.1),
+    sliderInput("b4", "B", min = 0, max = 10, value = 0, step = 0.1),
+    sliderInput("c4", "C", min = 0, max = 10, value = 1, step = 0.1),
+    sliderInput("d4", "D", min = 0, max = 10, value = 3, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out4 == 'Delicious'",
+    sliderInput("a5", "A", min = 0, max = 10, value = 7, step = 0.1),
+    sliderInput("b5", "B", min = 0, max = 10, value = 9, step = 0.1),
+    sliderInput("c5", "C", min = 0, max = 10, value = 10, step = 0.1),
+    sliderInput("d5", "D", min = 0, max = 10, value = 10, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.food == 'Gaussian'",
+    selectInput("out5", "Linguistic Variable':",
+    list("Rancid", "Delicious")),
+    conditionalPanel(
+    condition = "input.out5 == 'Rancid'",
+    sliderInput("g7", "Mean", min = 0, max = 10, value = 1.189, step = 0.1),
+    sliderInput("g8", "Spread", min = 0, max = 10, value = 0.6, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out5 == 'Delicious'",
+    sliderInput("g9", "Mean", min = 0, max = 10, value = 1.172, step = 0.1),
+    sliderInput("g10", "Spread", min = 0, max = 10, value = 9.4, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.food == 'Tringular'",
+    selectInput("out6", "Linguistic Variable':",
+    list("Rancid", "Delicious")),
+    conditionalPanel(
+    condition = "input.out6 == 'Rancid'",
+    sliderInput("t10", "Start", min = 0, max = 10, value = - 2.2, step = 0.1),
+    sliderInput("t11", "Peak", min = 0, max = 10, value = 0.6001, step = 0.1),
+    sliderInput("t12", "Stop", min = 0, max = 10, value = 3.4, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out6 == 'Delicious'",
+    sliderInput("t13", "Start", min = 0, max = 10, value = 6.639, step = 0.1),
+    sliderInput("t14", "Peak", min = 0, max = 10, value = 9.4, step = 0.1),
+    sliderInput("t15", "Stop", min = 0, max = 10, value = 12.16, step = 0.1)
+    )
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 3",
+    selectInput("tip", "Choose a MF type for output 'Tip':",
+    list("Trapeziod", "Gaussian", "Tringular")),
+    conditionalPanel(
+    condition = "input.tip == 'Trapeziod'",
+    selectInput("out7", "Linguistic Variable':",
+    list("Cheap", "Average", "Generous")),
+    conditionalPanel(
+    condition = "input.out7 == 'Cheap'",
+    sliderInput("a6", "A", min = 0, max = 30, value = 0.5, step = 0.1),
+    sliderInput("b6", "B", min = 0, max = 30, value = 4.5, step = 0.1),
+    sliderInput("c6", "C", min = 0, max = 30, value = 5.5, step = 0.1),
+    sliderInput("d6", "D", min = 0, max = 30, value = 9.5, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out7 == 'Average'",
+    sliderInput("a7", "A", min = 0, max = 30, value = 10.5, step = 0.1),
+    sliderInput("b7", "B", min = 0, max = 30, value = 14.5, step = 0.1),
+    sliderInput("c7", "C", min = 0, max = 30, value = 15.5, step = 0.1),
+    sliderInput("d7", "D", min = 0, max = 30, value = 19.5, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out7 == 'Generous'",
+    sliderInput("a8", "A", min = 0, max = 30, value = 20.5, step = 0.1),
+    sliderInput("b8", "B", min = 0, max = 30, value = 24.5, step = 0.1),
+    sliderInput("c8", "C", min = 0, max = 30, value = 25.5, step = 0.1),
+    sliderInput("d8", "D", min = 0, max = 30, value = 29.5, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.tip == 'Gaussian'",
+    selectInput("out8", "Linguistic Variable':",
+    list("Cheap", "Average", "Generous")),
+    conditionalPanel(
+    condition = "input.out8 == 'Cheap'",
+    sliderInput("g11", "Mean", min = 0, max = 30, value = 2.123, step = 0.1),
+    sliderInput("g12", "Spread", min = 0, max = 30, value = 5, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out8 == 'Average'",
+    sliderInput("g13", "Mean", min = 0, max = 30, value = 2.123, step = 0.1),
+    sliderInput("g14", "Spread", min = 0, max = 30, value = 15, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out8 == 'Generous'",
+    sliderInput("g15", "Mean", min = 0, max = 30, value = 2.123, step = 0.1),
+    sliderInput("g16", "Spread", min = 0, max = 30, value = 25, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.tip == 'Tringular'",
+    selectInput("out9", "Linguistic Variable':",
+    list("Cheap", "Average", "Generous")),
+    conditionalPanel(
+    condition = "input.out9 == 'Cheap'",
+    sliderInput("t16", "Start", min = 0, max = 30, value = 0, step = 0.1),
+    sliderInput("t17", "Peak", min = 0, max = 30, value = 5, step = 0.1),
+    sliderInput("t18", "Stop", min = 0, max = 30, value = 10, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out9 == 'Average'",
+    sliderInput("t19", "Start", min = 0, max = 30, value = 10, step = 0.1),
+    sliderInput("t20", "Peak", min = 0, max = 30, value = 15, step = 0.1),
+    sliderInput("t21", "Stop", min = 0, max = 30, value = 20, step = 0.1)
+    ),
+    conditionalPanel(
+    condition = "input.out9 == 'Generous'",
+    sliderInput("t22", "Start", min = 0, max = 30, value = 20, step = 0.1),
+    sliderInput("t23", "Peak", min = 0, max = 30, value = 25, step = 0.1),
+    sliderInput("t24", "Stop", min = 0, max = 30, value = 30, step = 0.1)
+    )
+    )
+    )
+    ),
+    mainPanel(
+    tabsetPanel(
+    type = "tab",
+    tabPanel("Membership Function", plotOutput("plot1")),
+    tabPanel("Rules", verbatimTextOutput("out"))
+    #  tabPanel("Output", uiOutput("output1"))
+    )
+    )
+    )
     )
 
 
 
-  )
+    server = function(input, output){
+
+        output$plot1 <- renderPlot({
+
+            fis = newfis('tipper')
+
+            fis = addvar(fis, 'input', 'service', c(0, 10))
+            fis = addvar(fis, 'input', 'food', c(0, 10))
+            fis = addvar(fis, 'output', 'tip', c(0, 30))
+
+            # MF type for service
+            if (input$service == "Trapeziod")
+            {
+                fis = addmf(fis, 'input', 1, 'poor', 'trapmf', c(input$a1, input$b1, input$c1, input$d1))
+                fis = addmf(fis, 'input', 1, 'good', 'trapmf', c(input$a2, input$b2, input$c2, input$d2))
+                fis = addmf(fis, 'input', 1, 'excellent', 'trapmf', c(input$a3, input$b3, input$c3, input$d3))
+            }
+            else if (input$service == "Gaussian")
+            {
+                fis = addmf(fis, 'input', 1, 'poor', 'gaussmf', c(input$g1, input$g2))
+                fis = addmf(fis, 'input', 1, 'good', 'gaussmf', c(input$g3, input$g4))
+                fis = addmf(fis, 'input', 1, 'excellent', 'gaussmf', c(input$g5, input$g6))
+            }
+            else if (input$service == "Tringular")
+            {
+                fis = addmf(fis, 'input', 1, 'poor', 'trimf', c(input$t1, input$t2, input$t3))
+                fis = addmf(fis, 'input', 1, 'good', 'trimf', c(input$t4, input$t5, input$t6))
+                fis = addmf(fis, 'input', 1, 'excellent', 'trimf', c(input$t7, input$t8, input$t9))
+            }
+
+            # MF type for food
+            if (input$food == "Trapeziod")
+            {
+                fis = addmf(fis, 'input', 2, 'rancid', 'trapmf', c(input$a4, input$b4, input$c4, input$d4))
+                fis = addmf(fis, 'input', 2, 'delicious', 'trapmf', c(input$a5, input$b5, input$c5, input$d5))
+            }
+            else if (input$food == "Gaussian")
+            {
+                fis = addmf(fis, 'input', 2, 'rancid', 'gaussmf', c(input$g7, input$g8))
+                fis = addmf(fis, 'input', 2, 'delicious', 'gaussmf', c(input$g9, input$g10))
+            }
+            else if (input$food == "Tringular")
+            {
+                fis = addmf(fis, 'input', 2, 'rancid', 'trimf', c(input$t10, input$t11, input$t12))
+                fis = addmf(fis, 'input', 2, 'delicious', 'trimf', c(input$t13, input$t14, input$t15))
+            }
+
+            # MF type for tip
+            if (input$tip == "Trapeziod")
+            {
+                fis = addmf(fis, 'output', 1, 'cheap', 'trapmf', c(input$a6, input$b6, input$c6, input$d6))
+                fis = addmf(fis, 'output', 1, 'average', 'trapmf', c(input$a7, input$b7, input$c7, input$d7))
+                fis = addmf(fis, 'output', 1, 'generous', 'trapmf', c(input$a8, input$b8, input$c8, input$d8))
+            }
+            else if (input$tip == "Gaussian")
+            {
+                fis = addmf(fis, 'output', 1, 'cheap', 'gaussmf', c(input$g11, input$g12))
+                fis = addmf(fis, 'output', 1, 'average', 'gaussmf', c(input$g13, input$g14))
+                fis = addmf(fis, 'output', 1, 'generous', 'gaussmf', c(input$g15, input$g16))
+            }
+            else if (input$tip == "Tringular")
+            {
+                fis = addmf(fis, 'output', 1, 'cheap', 'trimf', c(input$t16, input$t17, input$t18))
+                fis = addmf(fis, 'output', 1, 'average', 'trimf', c(input$t19, input$t20, input$t21))
+                fis = addmf(fis, 'output', 1, 'generous', 'trimf', c(input$t22, input$t23, input$t24))
+            }
 
 
+            #add rules
+            rl = rbind(c(1, 1, 1, 1, 2), c(2, 0, 2, 1, 1), c(3, 2, 3, 1, 2))
+            fis = addrule(fis, rl)
 
-  server = function(input,output){
+            # showrules(fis)
 
-    output$plot1 <- renderPlot({
+            if (input$out == 1)
+            {
+                plotmf(fis, "input", 1, main = "Membership function plots")
+            }
+            else if (input$out == 2)
+            {
+                plotmf(fis, "input", 2, main = "Membership function plots")
+            }
+            else if (input$out == 3)
+            {
+                plotmf(fis, "output", 1, main = "Membership function plots")
+            }
+        })
 
-      fis=newfis('tipper')
-
-      fis= addvar(fis, 'input', 'service', c(0, 10))
-      fis= addvar(fis, 'input', 'food', c(0, 10))
-      fis= addvar(fis, 'output', 'tip', c(0, 30))
-
-      # MF type for service
-      if ( input$service == "Trapeziod")
-      {
-        fis= addmf(fis, 'input', 1, 'poor', 'trapmf', c(input$a1, input$b1, input$c1, input$d1))
-        fis= addmf(fis, 'input', 1, 'good', 'trapmf', c(input$a2, input$b2, input$c2, input$d2))
-        fis= addmf(fis, 'input', 1, 'excellent', 'trapmf', c(input$a3, input$b3, input$c3, input$d3))
-      }
-      else if ( input$service == "Gaussian")
-      {
-        fis= addmf(fis, 'input', 1, 'poor', 'gaussmf', c(input$g1,input$g2))
-        fis= addmf(fis, 'input', 1, 'good', 'gaussmf', c(input$g3,input$g4))
-        fis= addmf(fis, 'input', 1, 'excellent', 'gaussmf', c(input$g5,input$g6))
-      }
-      else if ( input$service == "Tringular")
-      {
-        fis= addmf(fis, 'input', 1, 'poor', 'trimf', c(input$t1, input$t2, input$t3))
-        fis= addmf(fis, 'input', 1, 'good', 'trimf', c(input$t4, input$t5, input$t6))
-        fis= addmf(fis, 'input', 1, 'excellent', 'trimf', c(input$t7, input$t8, input$t9))
-      }
-
-      # MF type for food
-      if ( input$food == "Trapeziod")
-      {
-        fis= addmf(fis, 'input', 2, 'rancid', 'trapmf', c(input$a4, input$b4, input$c4, input$d4))
-        fis= addmf(fis, 'input', 2, 'delicious', 'trapmf', c(input$a5, input$b5, input$c5, input$d5))
-      }
-      else if ( input$food == "Gaussian")
-      {
-        fis= addmf(fis, 'input', 2, 'rancid', 'gaussmf', c(input$g7, input$g8))
-        fis= addmf(fis, 'input', 2, 'delicious', 'gaussmf', c(input$g9, input$g10))
-      }
-      else if ( input$food == "Tringular")
-      {
-        fis= addmf(fis, 'input', 2, 'rancid', 'trimf', c(input$t10, input$t11, input$t12))
-        fis= addmf(fis, 'input', 2, 'delicious', 'trimf', c(input$t13, input$t14, input$t15))
-      }
-
-      # MF type for tip
-      if ( input$tip == "Trapeziod")
-      {
-        fis= addmf(fis, 'output', 1, 'cheap', 'trapmf', c(input$a6, input$b6, input$c6, input$d6))
-        fis= addmf(fis, 'output', 1, 'average', 'trapmf', c(input$a7, input$b7, input$c7, input$d7))
-        fis= addmf(fis, 'output', 1, 'generous', 'trapmf', c(input$a8, input$b8, input$c8, input$d8))
-      }
-      else if ( input$tip == "Gaussian")
-      {
-        fis= addmf(fis, 'output', 1, 'cheap', 'gaussmf', c(input$g11, input$g12))
-        fis= addmf(fis, 'output', 1, 'average', 'gaussmf', c(input$g13, input$g14))
-        fis= addmf(fis, 'output', 1, 'generous', 'gaussmf', c(input$g15, input$g16))
-      }
-      else if ( input$tip == "Tringular")
-      {
-        fis= addmf(fis, 'output', 1, 'cheap', 'trimf', c(input$t16, input$t17, input$t18))
-        fis= addmf(fis, 'output', 1, 'average', 'trimf', c(input$t19, input$t20, input$t21))
-        fis= addmf(fis, 'output', 1, 'generous', 'trimf', c(input$t22, input$t23, input$t24))
-      }
+        output$out = renderPrint({
+            fis = tipper()
+            showrule(fis)
+            #  evalfis(c(1,2,5), fis)
+        })
+    }
 
 
-      #add rules
-      rl = rbind(c(1,1,1,1,2), c(2,0,2,1,1), c(3,2,3,1,2))
-      fis= addrule(fis, rl)
-
-      # showrules(fis)
-
-      if (input$out == 1)
-      {
-        plotmf(fis, "input",1, main = "Membership function plots")
-      }
-      else if (input$out == 2)
-      {
-        plotmf(fis, "input",2, main = "Membership function plots")
-      }
-      else if (input$out == 3)
-      {
-        plotmf(fis, "output",1, main = "Membership function plots")
-      }
-    })
-
-    output$out = renderPrint({
-      fis = tipper()
-      showrule(fis)
-      #  evalfis(c(1,2,5), fis)
-    })
-  }
-
-
-  shinyApp(ui = ui, server = server)
-
+    shinyApp(ui = ui, server = server)
 }
 
 #' Show a Graphic User Interface of fis object
@@ -2078,1344 +2289,1316 @@ tipperGUI2 = function(){
 #' @export
 showGUI = function(fis){
 
-  NumOutputs= length(fis$output)
-  NumInput = length(fis$input)
-  a1 = NULL
-  a2 = NULL
-  a3 = NULL
-  a4 = NULL
-  a5 = NULL
-  a6 = NULL
-  a7 = NULL
-  a8 = NULL
-  a9 = NULL
-  a10 = NULL
+    NumOutputs = length(fis$output)
+    NumInput = length(fis$input)
+    a1 = NULL
+    a2 = NULL
+    a3 = NULL
+    a4 = NULL
+    a5 = NULL
+    a6 = NULL
+    a7 = NULL
+    a8 = NULL
+    a9 = NULL
+    a10 = NULL
 
-  if(NumInput==1){
-    input_1 = fis$input[[1]]$name
-    input_2 = "NULL"
-    input_3 = "NULL"
-    input_4 = "NULL"
-    input_5 = "NULL"
-    input_6 = "NULL"
-    input_7 = "NULL"
-    input_8 = "NULL"
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2[1] = 0
-    a2[2] = 0
-    a3[1] = 0
-    a3[2] = 0
-    a4[1] = 0
-    a4[2] = 0
-    a5[1] = 0
-    a5[2] = 0
-    a6[1] = 0
-    a6[2] = 0
-    a7[1] = 0
-    a7[2] = 0
-    a8[1] = 0
-    a8[2] = 0
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==2){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = "NULL"
-    input_4 = "NULL"
-    input_5 = "NULL"
-    input_6 = "NULL"
-    input_7 = "NULL"
-    input_8 = "NULL"
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3[1] = 0
-    a3[2] = 0
-    a4[1] = 0
-    a4[2] = 0
-    a5[1] = 0
-    a5[2] = 0
-    a6[1] = 0
-    a6[2] = 0
-    a7[1] = 0
-    a7[2] = 0
-    a8[1] = 0
-    a8[2] = 0
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==3){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = "NULL"
-    input_5 = "NULL"
-    input_6 = "NULL"
-    input_7 = "NULL"
-    input_8 = "NULL"
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4[1] = 0
-    a4[2] = 0
-    a5[1] = 0
-    a5[2] = 0
-    a6[1] = 0
-    a6[2] = 0
-    a7[1] = 0
-    a7[2] = 0
-    a8[1] = 0
-    a8[2] = 0
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==4){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = fis$input[[4]]$name
-    input_5 = "NULL"
-    input_6 = "NULL"
-    input_7 = "NULL"
-    input_8 = "NULL"
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4 = fis$input[[4]]$range
-    a5[1] = 0
-    a5[2] = 0
-    a6[1] = 0
-    a6[2] = 0
-    a7[1] = 0
-    a7[2] = 0
-    a8[1] = 0
-    a8[2] = 0
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==5){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = fis$input[[4]]$name
-    input_5 = fis$input[[5]]$name
-    input_6 = "NULL"
-    input_7 = "NULL"
-    input_8 = "NULL"
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4 = fis$input[[4]]$range
-    a5 = fis$input[[5]]$range
-    a6[1] = 0
-    a6[2] = 0
-    a7[1] = 0
-    a7[2] = 0
-    a8[1] = 0
-    a8[2] = 0
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==6){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = fis$input[[4]]$name
-    input_5 = fis$input[[5]]$name
-    input_6 = fis$input[[6]]$name
-    input_7 = "NULL"
-    input_8 = "NULL"
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4 = fis$input[[4]]$range
-    a5 = fis$input[[5]]$range
-    a6 = fis$input[[6]]$range
-    a7[1] = 0
-    a7[2] = 0
-    a8[1] = 0
-    a8[2] = 0
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==7){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = fis$input[[4]]$name
-    input_5 = fis$input[[5]]$name
-    input_6 = fis$input[[6]]$name
-    input_7 = fis$input[[7]]$name
-    input_8 = "NULL"
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4 = fis$input[[4]]$range
-    a5 = fis$input[[5]]$range
-    a6 = fis$input[[6]]$range
-    a7 = fis$input[[7]]$range
-    a8[1] = 0
-    a8[2] = 0
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==8){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = fis$input[[4]]$name
-    input_5 = fis$input[[5]]$name
-    input_6 = fis$input[[6]]$name
-    input_7 = fis$input[[7]]$name
-    input_8 = fis$input[[8]]$name
-    input_9 = "NULL"
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4 = fis$input[[4]]$range
-    a5 = fis$input[[5]]$range
-    a6 = fis$input[[6]]$range
-    a7 = fis$input[[7]]$range
-    a8 = fis$input[[8]]$range
-    a9[1] = 0
-    a9[2] = 0
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==9){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = fis$input[[4]]$name
-    input_5 = fis$input[[5]]$name
-    input_6 = fis$input[[6]]$name
-    input_7 = fis$input[[7]]$name
-    input_8 = fis$input[[8]]$name
-    input_9 = fis$input[[9]]$name
-    input_10 = "NULL"
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4 = fis$input[[4]]$range
-    a5 = fis$input[[5]]$range
-    a6 = fis$input[[6]]$range
-    a7 = fis$input[[7]]$range
-    a8 = fis$input[[8]]$range
-    a9 = fis$input[[9]]$range
-    a10[1] = 0
-    a10[2] = 0
-  }else if(NumInput==10){
-    input_1 = fis$input[[1]]$name
-    input_2 = fis$input[[2]]$name
-    input_3 = fis$input[[3]]$name
-    input_4 = fis$input[[4]]$name
-    input_5 = fis$input[[5]]$name
-    input_6 = fis$input[[6]]$name
-    input_7 = fis$input[[7]]$name
-    input_8 = fis$input[[8]]$name
-    input_9 = fis$input[[9]]$name
-    input_10 = fis$input[[10]]$name
-    a1 = fis$input[[1]]$range
-    a2 = fis$input[[2]]$range
-    a3 = fis$input[[3]]$range
-    a4 = fis$input[[4]]$range
-    a5 = fis$input[[5]]$range
-    a6 = fis$input[[6]]$range
-    a7 = fis$input[[7]]$range
-    a8 = fis$input[[8]]$range
-    a9 = fis$input[[9]]$range
-    a10 = fis$input[[10]]$range
-  }
+    if (NumInput == 1) {
+        input_1 = fis$input[[1]]$name
+        input_2 = "NULL"
+        input_3 = "NULL"
+        input_4 = "NULL"
+        input_5 = "NULL"
+        input_6 = "NULL"
+        input_7 = "NULL"
+        input_8 = "NULL"
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2[1] = 0
+        a2[2] = 0
+        a3[1] = 0
+        a3[2] = 0
+        a4[1] = 0
+        a4[2] = 0
+        a5[1] = 0
+        a5[2] = 0
+        a6[1] = 0
+        a6[2] = 0
+        a7[1] = 0
+        a7[2] = 0
+        a8[1] = 0
+        a8[2] = 0
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 2) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = "NULL"
+        input_4 = "NULL"
+        input_5 = "NULL"
+        input_6 = "NULL"
+        input_7 = "NULL"
+        input_8 = "NULL"
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3[1] = 0
+        a3[2] = 0
+        a4[1] = 0
+        a4[2] = 0
+        a5[1] = 0
+        a5[2] = 0
+        a6[1] = 0
+        a6[2] = 0
+        a7[1] = 0
+        a7[2] = 0
+        a8[1] = 0
+        a8[2] = 0
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 3) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = "NULL"
+        input_5 = "NULL"
+        input_6 = "NULL"
+        input_7 = "NULL"
+        input_8 = "NULL"
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4[1] = 0
+        a4[2] = 0
+        a5[1] = 0
+        a5[2] = 0
+        a6[1] = 0
+        a6[2] = 0
+        a7[1] = 0
+        a7[2] = 0
+        a8[1] = 0
+        a8[2] = 0
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 4) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = fis$input[[4]]$name
+        input_5 = "NULL"
+        input_6 = "NULL"
+        input_7 = "NULL"
+        input_8 = "NULL"
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4 = fis$input[[4]]$range
+        a5[1] = 0
+        a5[2] = 0
+        a6[1] = 0
+        a6[2] = 0
+        a7[1] = 0
+        a7[2] = 0
+        a8[1] = 0
+        a8[2] = 0
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 5) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = fis$input[[4]]$name
+        input_5 = fis$input[[5]]$name
+        input_6 = "NULL"
+        input_7 = "NULL"
+        input_8 = "NULL"
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4 = fis$input[[4]]$range
+        a5 = fis$input[[5]]$range
+        a6[1] = 0
+        a6[2] = 0
+        a7[1] = 0
+        a7[2] = 0
+        a8[1] = 0
+        a8[2] = 0
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 6) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = fis$input[[4]]$name
+        input_5 = fis$input[[5]]$name
+        input_6 = fis$input[[6]]$name
+        input_7 = "NULL"
+        input_8 = "NULL"
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4 = fis$input[[4]]$range
+        a5 = fis$input[[5]]$range
+        a6 = fis$input[[6]]$range
+        a7[1] = 0
+        a7[2] = 0
+        a8[1] = 0
+        a8[2] = 0
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 7) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = fis$input[[4]]$name
+        input_5 = fis$input[[5]]$name
+        input_6 = fis$input[[6]]$name
+        input_7 = fis$input[[7]]$name
+        input_8 = "NULL"
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4 = fis$input[[4]]$range
+        a5 = fis$input[[5]]$range
+        a6 = fis$input[[6]]$range
+        a7 = fis$input[[7]]$range
+        a8[1] = 0
+        a8[2] = 0
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 8) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = fis$input[[4]]$name
+        input_5 = fis$input[[5]]$name
+        input_6 = fis$input[[6]]$name
+        input_7 = fis$input[[7]]$name
+        input_8 = fis$input[[8]]$name
+        input_9 = "NULL"
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4 = fis$input[[4]]$range
+        a5 = fis$input[[5]]$range
+        a6 = fis$input[[6]]$range
+        a7 = fis$input[[7]]$range
+        a8 = fis$input[[8]]$range
+        a9[1] = 0
+        a9[2] = 0
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 9) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = fis$input[[4]]$name
+        input_5 = fis$input[[5]]$name
+        input_6 = fis$input[[6]]$name
+        input_7 = fis$input[[7]]$name
+        input_8 = fis$input[[8]]$name
+        input_9 = fis$input[[9]]$name
+        input_10 = "NULL"
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4 = fis$input[[4]]$range
+        a5 = fis$input[[5]]$range
+        a6 = fis$input[[6]]$range
+        a7 = fis$input[[7]]$range
+        a8 = fis$input[[8]]$range
+        a9 = fis$input[[9]]$range
+        a10[1] = 0
+        a10[2] = 0
+    }else if (NumInput == 10) {
+        input_1 = fis$input[[1]]$name
+        input_2 = fis$input[[2]]$name
+        input_3 = fis$input[[3]]$name
+        input_4 = fis$input[[4]]$name
+        input_5 = fis$input[[5]]$name
+        input_6 = fis$input[[6]]$name
+        input_7 = fis$input[[7]]$name
+        input_8 = fis$input[[8]]$name
+        input_9 = fis$input[[9]]$name
+        input_10 = fis$input[[10]]$name
+        a1 = fis$input[[1]]$range
+        a2 = fis$input[[2]]$range
+        a3 = fis$input[[3]]$range
+        a4 = fis$input[[4]]$range
+        a5 = fis$input[[5]]$range
+        a6 = fis$input[[6]]$range
+        a7 = fis$input[[7]]$range
+        a8 = fis$input[[8]]$range
+        a9 = fis$input[[9]]$range
+        a10 = fis$input[[10]]$range
+    }
 
-  ui = fluidPage(
-    titlePanel(title=h1(paste("Type-1 Fuzzy Logic : ", fis$name), align="center")),
+    ui = fluidPage(
+    titlePanel(title = h1(paste("Type-1 Fuzzy Logic : ", fis$name), align = "center")),
     br(),
     sidebarLayout(
-      sidebarPanel(
-        selectInput("out", "Number of input':",
-                    list(NumInput)),
-        selectInput("out1", "Number of output':",
-                    list(NumOutputs)),
-        conditionalPanel(
-          condition = "input.out == 1",
-          selectInput("out2", "Select input / output variable",
-                      list(input_1,fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 2",
-          selectInput("out3", "Select input / output variable",
-                      list(input_1,input_2,fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 3",
-          selectInput("out4", "Select input / output variable",
-                      list(input_1,input_2,input_3, fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 4",
-          selectInput("out5", "Select input / output variable",
-                      list(input_1,input_2,input_3,input_4, fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 5",
-          selectInput("out6", "Select input / output variable",
-                      list(input_1,input_2,input_3,input_4,input_5, fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 6",
-          selectInput("out7", "Select input / output variable",
-                      list(input_1,input_2,input_3,input_4,input_5,input_6, fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 7",
-          selectInput("out8", "Select input / output variable",
-                      list(input_1,input_2,input_3,input_4,input_5,input_6,input_7, fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 8",
-          selectInput("out9", "Select input / output variable",
-                      list(input_1,input_2,input_3,input_4,input_5,input_6,input_7,input_8, fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 9",
-          selectInput("out10", "Select input / output variable",
-                      list(input_1,input_2,input_3,input_4,input_5,input_6,input_7,input_8,input_9, fis$output[[1]]$name))
-        ),
-        conditionalPanel(
-          condition = "input.out == 10",
-          selectInput("out11", "Select input / output variable",
-                      list(input_1,input_2,input_3,input_4,input_5,input_6,input_7,input_8,input_9,input_10, fis$output[[1]]$name))
-        ),
+    sidebarPanel(
+    selectInput("out", "Number of input':",
+    list(NumInput)),
+    selectInput("out1", "Number of output':",
+    list(NumOutputs)),
+    conditionalPanel(
+    condition = "input.out == 1",
+    selectInput("out2", "Select input / output variable",
+    list(input_1, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 2",
+    selectInput("out3", "Select input / output variable",
+    list(input_1, input_2, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 3",
+    selectInput("out4", "Select input / output variable",
+    list(input_1, input_2, input_3, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 4",
+    selectInput("out5", "Select input / output variable",
+    list(input_1, input_2, input_3, input_4, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 5",
+    selectInput("out6", "Select input / output variable",
+    list(input_1, input_2, input_3, input_4, input_5, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 6",
+    selectInput("out7", "Select input / output variable",
+    list(input_1, input_2, input_3, input_4, input_5, input_6, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 7",
+    selectInput("out8", "Select input / output variable",
+    list(input_1, input_2, input_3, input_4, input_5, input_6, input_7, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 8",
+    selectInput("out9", "Select input / output variable",
+    list(input_1, input_2, input_3, input_4, input_5, input_6, input_7, input_8, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 9",
+    selectInput("out10", "Select input / output variable",
+    list(input_1, input_2, input_3, input_4, input_5, input_6, input_7, input_8, input_9, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 10",
+    selectInput("out11", "Select input / output variable",
+    list(input_1, input_2, input_3, input_4, input_5, input_6, input_7, input_8, input_9, input_10, fis$output[[1]]$name))
+    ),
+    conditionalPanel(
+    condition = "input.out == 1",
+    radioButtons("eva1", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva1 == 2",
+    sliderInput("1", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 2",
+    radioButtons("eva2", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva2 == 2",
+    sliderInput("2", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("3", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 3",
+    radioButtons("eva3", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva3 == 2",
+    sliderInput("4", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("5", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("6", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 4",
+    radioButtons("eva4", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva4 == 2",
+    sliderInput("7", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("8", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("9", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1),
+    sliderInput("10", input_4, min = a4[1], max = a4[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 5",
+    radioButtons("eva5", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva5 == 2",
+    sliderInput("11", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("12", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("13", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1),
+    sliderInput("14", input_4, min = a4[1], max = a4[2], value = 0.1, step = 0.1),
+    sliderInput("15", input_5, min = a5[1], max = a5[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 6",
+    radioButtons("eva6", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva6 == 2",
+    sliderInput("16", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("17", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("18", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1),
+    sliderInput("19", input_4, min = a4[1], max = a4[2], value = 0.1, step = 0.1),
+    sliderInput("20", input_5, min = a5[1], max = a5[2], value = 0.1, step = 0.1),
+    sliderInput("21", input_6, min = a6[1], max = a6[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 7",
+    radioButtons("eva7", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva7 == 2",
+    sliderInput("22", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("23", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("24", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1),
+    sliderInput("25", input_4, min = a4[1], max = a4[2], value = 0.1, step = 0.1),
+    sliderInput("26", input_5, min = a5[1], max = a5[2], value = 0.1, step = 0.1),
+    sliderInput("27", input_6, min = a6[1], max = a6[2], value = 0.1, step = 0.1),
+    sliderInput("28", input_7, min = a7[1], max = a7[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 8",
+    radioButtons("eva8", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva8 == 2",
+    sliderInput("29", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("30", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("31", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1),
+    sliderInput("32", input_4, min = a4[1], max = a4[2], value = 0.1, step = 0.1),
+    sliderInput("33", input_5, min = a5[1], max = a5[2], value = 0.1, step = 0.1),
+    sliderInput("34", input_6, min = a6[1], max = a6[2], value = 0.1, step = 0.1),
+    sliderInput("35", input_7, min = a7[1], max = a7[2], value = 0.1, step = 0.1),
+    sliderInput("36", input_8, min = a8[1], max = a8[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 9",
+    radioButtons("eva9", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva9 == 2",
+    sliderInput("37", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("38", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("39", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1),
+    sliderInput("40", input_4, min = a4[1], max = a4[2], value = 0.1, step = 0.1),
+    sliderInput("41", input_5, min = a5[1], max = a5[2], value = 0.1, step = 0.1),
+    sliderInput("42", input_6, min = a6[1], max = a6[2], value = 0.1, step = 0.1),
+    sliderInput("43", input_7, min = a7[1], max = a7[2], value = 0.1, step = 0.1),
+    sliderInput("44", input_8, min = a8[1], max = a8[2], value = 0.1, step = 0.1),
+    sliderInput("45", input_9, min = a9[1], max = a9[2], value = 0.1, step = 0.1)
+    )
+    ),
+    conditionalPanel(
+    condition = "input.out == 10",
+    radioButtons("eva10", "Evaluate FIS ",
+    list("Reset" = 1,
+    "evalfis()" = 2)),
+    conditionalPanel(
+    condition = "input.eva10 == 2",
+    sliderInput("46", input_1, min = a1[1], max = a1[2], value = 0.1, step = 0.1),
+    sliderInput("47", input_2, min = a2[1], max = a2[2], value = 0.1, step = 0.1),
+    sliderInput("48", input_3, min = a3[1], max = a3[2], value = 0.1, step = 0.1),
+    sliderInput("49", input_4, min = a4[1], max = a4[2], value = 0.1, step = 0.1),
+    sliderInput("50", input_5, min = a5[1], max = a5[2], value = 0.1, step = 0.1),
+    sliderInput("51", input_6, min = a6[1], max = a6[2], value = 0.1, step = 0.1),
+    sliderInput("52", input_7, min = a7[1], max = a7[2], value = 0.1, step = 0.1),
+    sliderInput("53", input_8, min = a8[1], max = a8[2], value = 0.1, step = 0.1),
+    sliderInput("54", input_9, min = a9[1], max = a9[2], value = 0.1, step = 0.1),
+    sliderInput("55", input_10, min = a10[1], max = a10[2], value = 0.1, step = 0.1)
+    )
+    ),
+    actionButton("do", "Exit")
+    ),
+    mainPanel(
+    tabsetPanel(
+    type = "tab",
+    tabPanel("Membership Function", plotOutput("plot1"), downloadButton(outputId = "down", label = "Download the plot")),
+    tabPanel("Rules", verbatimTextOutput("out")),
+    tabPanel("Defuzzifier", plotOutput("defu"), downloadButton(outputId = "down2", label = "Download the plot"))
+    #  tabPanel("Output", uiOutput("output1"))
+    )
+    )
+    )
+    )
 
 
-        conditionalPanel(
-          condition = "input.out == 1",
-          radioButtons("eva1", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva1 == 2",
-            sliderInput("1",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1)
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 2",
-          radioButtons("eva2", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva2 == 2",
-            sliderInput("2",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("3",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1)
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 3",
-          radioButtons("eva3", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva3 == 2",
-            sliderInput("4",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("5",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("6",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1)
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 4",
-          radioButtons("eva4", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva4 == 2",
-            sliderInput("7",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("8",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("9",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
-            sliderInput("10",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1)
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 5",
-          radioButtons("eva5", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva5 == 2",
-            sliderInput("11",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("12",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("13",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
-            sliderInput("14",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
-            sliderInput("15",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1)
+    server = function(input, output){
 
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 6",
-          radioButtons("eva6", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva6 == 2",
-            sliderInput("16",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("17",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("18",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
-            sliderInput("19",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
-            sliderInput("20",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
-            sliderInput("21",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1)
 
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 7",
-          radioButtons("eva7", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva7 == 2",
-            sliderInput("22",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("23",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("24",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
-            sliderInput("25",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
-            sliderInput("26",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
-            sliderInput("27",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
-            sliderInput("28",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1)
+        output$plot1 <- renderPlot({
 
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 8",
-          radioButtons("eva8", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva8 == 2",
-            sliderInput("29",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("30",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("31",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
-            sliderInput("32",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
-            sliderInput("33",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
-            sliderInput("34",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
-            sliderInput("35",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1),
-            sliderInput("36",  input_8, min=a8[1], max=a8[2], value=0.1, step=0.1)
+            if (NumInput == 1) {
+                if (input$out2 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out2 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 2) {
+                if (input$out3 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out3 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out3 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 3) {
+                if (input$out4 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out4 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out4 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out4 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 4) {
+                if (input$out5 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out5 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out5 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out5 == fis$input[[4]]$name)
+                {
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                }
+                else if (input$out5 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 5) {
+                if (input$out6 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out6 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out6 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out6 == fis$input[[4]]$name)
+                {
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                }
+                else if (input$out6 == fis$input[[5]]$name)
+                {
+                    plotmf(fis, "input", 5)
+                }
+                else if (input$out6 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 6) {
+                if (input$out7 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out7 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out7 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out7 == fis$input[[4]]$name)
+                {
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                }
+                else if (input$out7 == fis$input[[5]]$name)
+                {
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                }
+                else if (input$out7 == fis$input[[6]]$name)
+                {
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                }
+                else if (input$out7 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 7) {
+                if (input$out8 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out8 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out8 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out8 == fis$input[[4]]$name)
+                {
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                }
+                else if (input$out8 == fis$input[[5]]$name)
+                {
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                }
+                else if (input$out8 == fis$input[[6]]$name)
+                {
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                }
+                else if (input$out8 == fis$input[[7]]$name)
+                {
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                }
+                else if (input$out8 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 8) {
+                if (input$out9 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$input[[4]]$name)
+                {
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$input[[5]]$name)
+                {
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$input[[6]]$name)
+                {
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$input[[7]]$name)
+                {
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$input[[8]]$name)
+                {
+                    plotmf(fis, "input", 8, main = "Membership function plots")
+                }
+                else if (input$out9 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 9) {
+                if (input$out10 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[4]]$name)
+                {
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[5]]$name)
+                {
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[6]]$name)
+                {
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[7]]$name)
+                {
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[8]]$name)
+                {
+                    plotmf(fis, "input", 8, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$input[[9]]$name)
+                {
+                    plotmf(fis, "input", 9, main = "Membership function plots")
+                }
+                else if (input$out10 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }else if (NumInput == 10) {
+                if (input$out11 == fis$input[[1]]$name)
+                {
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[2]]$name)
+                {
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[3]]$name)
+                {
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[4]]$name)
+                {
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[5]]$name)
+                {
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[6]]$name)
+                {
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[7]]$name)
+                {
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[8]]$name)
+                {
+                    plotmf(fis, "input", 8, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[9]]$name)
+                {
+                    plotmf(fis, "input", 9, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$input[[10]]$name)
+                {
+                    plotmf(fis, "input", 10, main = "Membership function plots")
+                }
+                else if (input$out11 == fis$output[[1]]$name)
+                {
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                }
+            }
+        })
 
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 9",
-          radioButtons("eva9", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva9 == 2",
-            sliderInput("37",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("38",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("39",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
-            sliderInput("40",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
-            sliderInput("41",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
-            sliderInput("42",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
-            sliderInput("43",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1),
-            sliderInput("44",  input_8, min=a8[1], max=a8[2], value=0.1, step=0.1),
-            sliderInput("45",  input_9, min=a9[1], max=a9[2], value=0.1, step=0.1)
+        output$defu <- renderPlot({
 
-          )
-        ),
-        conditionalPanel(
-          condition = "input.out == 10",
-          radioButtons("eva10", "Evaluate FIS ",
-                       list("Reset" = 1,
-                            "evalfis()" = 2)),
-          conditionalPanel(
-            condition = "input.eva10 == 2",
-            sliderInput("46",  input_1, min=a1[1], max=a1[2], value=0.1, step=0.1),
-            sliderInput("47",  input_2, min=a2[1], max=a2[2], value=0.1, step=0.1),
-            sliderInput("48",  input_3, min=a3[1], max=a3[2], value=0.1, step=0.1),
-            sliderInput("49",  input_4, min=a4[1], max=a4[2], value=0.1, step=0.1),
-            sliderInput("50",  input_5, min=a5[1], max=a5[2], value=0.1, step=0.1),
-            sliderInput("51",  input_6, min=a6[1], max=a6[2], value=0.1, step=0.1),
-            sliderInput("52",  input_7, min=a7[1], max=a7[2], value=0.1, step=0.1),
-            sliderInput("53",  input_8, min=a8[1], max=a8[2], value=0.1, step=0.1),
-            sliderInput("54",  input_9, min=a9[1], max=a9[2], value=0.1, step=0.1),
-            sliderInput("55",  input_10, min=a10[1], max=a10[2], value=0.1, step=0.1)
+            if (NumInput == 1) {
 
-          )
-        ),
-        actionButton("do", "Exit")
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`1`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 2) {
 
-      ),
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`2`, input$`3`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 3) {
 
-      mainPanel(
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`4`, input$`5`, input$`6`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 4) {
 
-        tabsetPanel(
-          type="tab",
-          tabPanel("Membership Function",  plotOutput("plot1"), downloadButton(outputId = "down", label = "Download the plot")),
-          tabPanel("Rules", verbatimTextOutput("out")),
-          tabPanel("Defuzzifier", plotOutput("defu"),downloadButton(outputId = "down2", label = "Download the plot"))
-          #  tabPanel("Output", uiOutput("output1"))
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`7`, input$`8`, input$`9`, input$`10`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 5) {
+
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`11`, input$`12`, input$`13`, input$`14`, input$`15`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 6) {
+
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`16`, input$`17`, input$`18`, input$`19`, input$`20`, input$`21`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 7) {
+
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`22`, input$`23`, input$`24`, input$`25`, input$`26`, input$`27`, input$`28`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 8) {
+
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`29`, input$`30`, input$`31`, input$`32`, input$`33`, input$`34`, input$`35`, input$`36`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 9) {
+
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`37`, input$`38`, input$`39`, input$`40`, input$`41`, input$`42`, input$`43`, input$`44`, input$`45`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }else if (NumInput == 10) {
+
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`46`, input$`47`, input$`48`, input$`49`, input$`50`, input$`51`, input$`52`, input$`53`, input$`54`, input$`55`), fis)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+            }
+        })
+
+        output$down2 <- downloadHandler(
+        filename = function() {
+            paste("MFs", "pdf", sep = ".")
+        },
+        # content is a function with argument file. content writes the plot to the device
+        content = function(file) {
+            if (NumInput == 1) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`1`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 2) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`2`, input$`3`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 3) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`4`, input$`5`, input$`6`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 4) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`7`, input$`8`, input$`9`, input$`10`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 5) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`11`, input$`12`, input$`13`, input$`14`, input$`15`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 6) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`16`, input$`17`, input$`18`, input$`19`, input$`20`, input$`21`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 7) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`22`, input$`23`, input$`24`, input$`25`, input$`26`, input$`27`, input$`28`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 8) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`29`, input$`30`, input$`31`, input$`32`, input$`33`, input$`34`, input$`35`, input$`36`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 9) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`37`, input$`38`, input$`39`, input$`40`, input$`41`, input$`42`, input$`43`, input$`44`, input$`45`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }else if (NumInput == 10) {
+                out_name = fis$output[[1]]$name
+                evalfis(c(input$`46`, input$`47`, input$`48`, input$`49`, input$`50`, input$`51`, input$`52`, input$`53`, input$`54`, input$`55`), fis)
+                pdf(file)
+                plot(D_x, D_y, type = "l", main = c(out_name, D_out), col = "blue", lwd = 2)
+                dev.off()
+            }
+        }
         )
+        observeEvent(input$do, {
+            stopApp()
+        })
 
-      )
+        output$down <- downloadHandler(
+        filename = function() {
+            paste("MFs", "pdf", sep = ".")
+        },
+        # content is a function with argument file. content writes the plot to the device
+        content = function(file) {
+            if (NumInput == 1) {
+                if (input$out2 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out2 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 2) {
+                if (input$out3 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out3 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out3 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 3) {
+                if (input$out4 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out4 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out4 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out4 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 4) {
+                if (input$out5 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out5 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out5 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out5 == fis$input[[4]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out5 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 5) {
+                if (input$out6 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out6 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out6 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out6 == fis$input[[4]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out6 == fis$input[[5]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out6 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 6) {
+                if (input$out7 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out7 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out7 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out7 == fis$input[[4]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out7 == fis$input[[5]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out7 == fis$input[[6]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out7 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 7) {
+                if (input$out8 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out8 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out8 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out8 == fis$input[[4]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out8 == fis$input[[5]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out8 == fis$input[[6]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out8 == fis$input[[7]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out8 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 8) {
+                if (input$out9 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$input[[4]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$input[[5]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$input[[6]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$input[[7]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$input[[8]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 8, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out9 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 9) {
+                if (input$out10 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[4]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[5]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[6]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[7]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[8]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 8, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$input[[9]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 9, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out10 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }else if (NumInput == 10) {
+                if (input$out11 == fis$input[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 1, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[2]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 2, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[3]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 3, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[4]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 4, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[5]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 5, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[6]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 6, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[7]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 7, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[8]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 8, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[9]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 9, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$input[[10]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "input", 10, main = "Membership function plots")
+                    dev.off()
+                }
+                else if (input$out11 == fis$output[[1]]$name)
+                {
+                    pdf(file)
+                    plotmf(fis, "output", 1, main = "Membership function plots")
+                    dev.off()
+                }
+            }
+        }
+        )
+        output$out = renderPrint({
+            # fis = tipper()
+            showrule(fis)
+            #  evalfis(c(1,2,5), fis)
+        })
+    }
 
-    )
-
-
-
-  )
-
-
-  server =  function(input,output){
-
-
-    output$plot1 <- renderPlot({
-
-      if(NumInput==1){
-        if (input$out2 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out2 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==2){
-        if (input$out3 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out3 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out3 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==3){
-        if (input$out4 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out4 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out4 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out4 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==4){
-        if (input$out5 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out5 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out5 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out5 == fis$input[[4]]$name)
-        {
-          plotmf(fis, "input",4, main = "Membership function plots")
-        }
-        else if (input$out5 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==5){
-        if (input$out6 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out6 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out6 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out6 == fis$input[[4]]$name)
-        {
-          plotmf(fis, "input",4, main = "Membership function plots")
-        }
-        else if (input$out6 == fis$input[[5]]$name)
-        {
-          plotmf(fis, "input",5)
-        }
-        else if (input$out6 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==6){
-        if (input$out7 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out7 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out7 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out7 == fis$input[[4]]$name)
-        {
-          plotmf(fis, "input",4, main = "Membership function plots")
-        }
-        else if (input$out7 == fis$input[[5]]$name)
-        {
-          plotmf(fis, "input",5, main = "Membership function plots")
-        }
-        else if (input$out7 == fis$input[[6]]$name)
-        {
-          plotmf(fis, "input",6, main = "Membership function plots")
-        }
-        else if (input$out7 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==7){
-        if (input$out8 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out8 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out8 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out8 == fis$input[[4]]$name)
-        {
-          plotmf(fis, "input",4, main = "Membership function plots")
-        }
-        else if (input$out8 == fis$input[[5]]$name)
-        {
-          plotmf(fis, "input",5, main = "Membership function plots")
-        }
-        else if (input$out8 == fis$input[[6]]$name)
-        {
-          plotmf(fis, "input",6, main = "Membership function plots")
-        }
-        else if (input$out8 == fis$input[[7]]$name)
-        {
-          plotmf(fis, "input",7, main = "Membership function plots")
-        }
-        else if (input$out8 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==8){
-        if (input$out9 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$input[[4]]$name)
-        {
-          plotmf(fis, "input",4, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$input[[5]]$name)
-        {
-          plotmf(fis, "input",5, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$input[[6]]$name)
-        {
-          plotmf(fis, "input",6, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$input[[7]]$name)
-        {
-          plotmf(fis, "input",7, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$input[[8]]$name)
-        {
-          plotmf(fis, "input",8, main = "Membership function plots")
-        }
-        else if (input$out9 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==9){
-        if (input$out10 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[4]]$name)
-        {
-          plotmf(fis, "input",4, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[5]]$name)
-        {
-          plotmf(fis, "input",5, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[6]]$name)
-        {
-          plotmf(fis, "input",6, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[7]]$name)
-        {
-          plotmf(fis, "input",7, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[8]]$name)
-        {
-          plotmf(fis, "input",8, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$input[[9]]$name)
-        {
-          plotmf(fis, "input",9, main = "Membership function plots")
-        }
-        else if (input$out10 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }else if (NumInput==10){
-        if (input$out11 == fis$input[[1]]$name)
-        {
-          plotmf(fis, "input",1, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[2]]$name)
-        {
-          plotmf(fis, "input",2, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[3]]$name)
-        {
-          plotmf(fis, "input",3, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[4]]$name)
-        {
-          plotmf(fis, "input",4, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[5]]$name)
-        {
-          plotmf(fis, "input",5, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[6]]$name)
-        {
-          plotmf(fis, "input",6, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[7]]$name)
-        {
-          plotmf(fis, "input",7, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[8]]$name)
-        {
-          plotmf(fis, "input",8, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[9]]$name)
-        {
-          plotmf(fis, "input",9, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$input[[10]]$name)
-        {
-          plotmf(fis, "input",10, main = "Membership function plots")
-        }
-        else if (input$out11 == fis$output[[1]]$name)
-        {
-          plotmf(fis, "output",1, main = "Membership function plots")
-        }
-      }
-
-
-    })
-
-    output$defu <- renderPlot({
-
-      if(NumInput==1){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`1`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==2){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`2`,input$`3`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==3){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`4`,input$`5`,input$`6`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==4){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`7`,input$`8`,input$`9`,input$`10`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==5){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`11`,input$`12`,input$`13`,input$`14`,input$`15`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==6){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`16`,input$`17`,input$`18`,input$`19`,input$`20`,input$`21`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==7){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`22`,input$`23`,input$`24`,input$`25`,input$`26`,input$`27`,input$`28`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==8){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`29`,input$`30`,input$`31`,input$`32`,input$`33`,input$`34`,input$`35`,input$`36`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==9){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`37`,input$`38`,input$`39`,input$`40`,input$`41`,input$`42`,input$`43`,input$`44`,input$`45`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }else if (NumInput==10){
-
-        out_name = fis$output[[1]]$name
-        evalfis(c(input$`46`,input$`47`,input$`48`,input$`49`,input$`50`,input$`51`,input$`52`,input$`53`,input$`54`,input$`55`),fis)
-        plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-      }
-
-
-    })
-
-    output$down2 <- downloadHandler(
-      filename =  function() {
-        paste("MFs", "pdf", sep=".")
-      },
-      # content is a function with argument file. content writes the plot to the device
-      content = function(file) {
-        if(NumInput==1){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`1`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==2){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`2`,input$`3`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==3){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`4`,input$`5`,input$`6`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==4){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`7`,input$`8`,input$`9`,input$`10`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==5){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`11`,input$`12`,input$`13`,input$`14`,input$`15`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==6){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`16`,input$`17`,input$`18`,input$`19`,input$`20`,input$`21`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==7){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`22`,input$`23`,input$`24`,input$`25`,input$`26`,input$`27`,input$`28`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==8){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`29`,input$`30`,input$`31`,input$`32`,input$`33`,input$`34`,input$`35`,input$`36`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==9){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`37`,input$`38`,input$`39`,input$`40`,input$`41`,input$`42`,input$`43`,input$`44`,input$`45`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }else if (NumInput==10){
-          out_name = fis$output[[1]]$name
-          evalfis(c(input$`46`,input$`47`,input$`48`,input$`49`,input$`50`,input$`51`,input$`52`,input$`53`,input$`54`,input$`55`),fis)
-          pdf(file)
-          plot(D_x,D_y, type="l", main=c(out_name,D_out), col="blue", lwd=2)
-          dev.off()
-        }
-
-      }
-
-
-    )
-    observeEvent(input$do, {
-      stopApp()
-    })
-
-    output$down <- downloadHandler(
-      filename =  function() {
-        paste("MFs", "pdf", sep=".")
-      },
-      # content is a function with argument file. content writes the plot to the device
-      content = function(file) {
-        if(NumInput==1){
-          if (input$out2 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out2 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==2){
-          if (input$out3 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out3 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out3 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==3){
-          if (input$out4 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out4 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out4 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out4 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==4){
-          if (input$out5 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out5 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out5 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out5 == fis$input[[4]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",4, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out5 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==5){
-          if (input$out6 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out6 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out6 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out6 == fis$input[[4]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",4, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out6 == fis$input[[5]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",5, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out6 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==6){
-          if (input$out7 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out7 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out7 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out7 == fis$input[[4]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",4, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out7 == fis$input[[5]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",5, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out7 == fis$input[[6]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",6, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out7 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==7){
-          if (input$out8 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out8 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out8 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out8 == fis$input[[4]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",4, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out8 == fis$input[[5]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",5, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out8 == fis$input[[6]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",6, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out8 == fis$input[[7]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",7, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out8 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==8){
-          if (input$out9 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$input[[4]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",4, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$input[[5]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",5, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$input[[6]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",6, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$input[[7]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",7, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$input[[8]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",8, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out9 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==9){
-          if (input$out10 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[4]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",4, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[5]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",5, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[6]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",6, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[7]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",7, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[8]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",8, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$input[[9]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",9, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out10 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }else if (NumInput==10){
-          if (input$out11 == fis$input[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",1, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[2]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",2, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[3]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",3, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[4]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",4, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[5]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",5, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[6]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",6, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[7]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",7, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[8]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",8, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[9]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",9, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$input[[10]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "input",10, main = "Membership function plots")
-            dev.off()
-          }
-          else if (input$out11 == fis$output[[1]]$name)
-          {
-            pdf(file)
-            plotmf(fis, "output",1, main = "Membership function plots")
-            dev.off()
-          }
-        }
-
-
-      }
-    )
-    output$out = renderPrint({
-      # fis = tipper()
-      showrule(fis)
-      #  evalfis(c(1,2,5), fis)
-    })
-  }
-
-  shinyApp(ui = ui, server = server)
-
+    shinyApp(ui = ui, server = server)
 }
-
-
