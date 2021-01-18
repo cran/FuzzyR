@@ -110,8 +110,8 @@ addmf <- function(fis, varType, varIndex, mfName, mfType, mfParams) {
 #' @details
 #' For example, if one has a fis with 2 input variables, and 1 output variable, each of which have 3 membership functions (the amount of membership functions need not be the same). The following rule: 1 3 2 1 2 will mean m = 2 (for 2 input variables), n = 1 (for 1 output variable), and the last 2 columns represent weight and fuzzy operator for the rule's antecedent respectively. \cr\cr
 #' The first column refers to the first input variable's membership function at index 1.\cr\cr
-#' The second column refers to the second input variable's membership function at index 2.\cr\cr
-#' The third column refers to the first output variable's membership function at index 3.\cr\cr
+#' The second column refers to the second input variable's membership function at index 3.\cr\cr
+#' The third column refers to the first output variable's membership function at index 2.\cr\cr
 #' The fourth column refers to the weight to be applied to the rule.\cr\cr
 #' The fifth column refers to the fuzzy operator for the rule's antecedent (in this case it represents 'OR').
 #' @return A fis structure with the new rule added.
@@ -454,8 +454,9 @@ writefis <- function(fis, fileName='fuzzy.fis') {
     fileText[10] = paste("ImpMethod='", fis$impMethod, "'", sep = "")
     fileText[11] = paste("AggMethod='", fis$aggMethod, "'", sep = "")
     fileText[12] = paste("DefuzzMethod='", fis$defuzzMethod, "'", sep = "")
-    fileText[13] = ""
-    line = 14
+    fileText[13] = paste("mfType='", fis$mfType, "'", sep = "")
+    fileText[14] = ""
+    line = 15
 
     for (i in 1 : NumInputs) {
         fileText[line] = paste("[Input", i, "]", sep = "")
@@ -463,6 +464,10 @@ writefis <- function(fis, fileName='fuzzy.fis') {
         fileText[line] = paste("Name='", fis$input[[i]]$name, "'", sep = "")
         line = line + 1
         fileText[line] = paste("Range=[", fis$input[[i]]$range[1], " ", fis$input[[i]]$range[2], "]", sep = "")
+        line = line + 1
+        fileText[line] = paste("fuzzification.method='", fis$input[[i]]$fuzzification.method, "'", sep = "")
+        line = line + 1
+        fileText[line] = paste("fuzzification.params=[", paste(fis$input[[i]]$fuzzification.params, collapse = " "), "]", sep = "")
         line = line + 1
         fileText[line] = paste("NumMFs=", NumInputMFs[i], sep = "")
         line = line + 1
@@ -544,6 +549,7 @@ readfis <- function(fileName) {
     ImpMethod <- 'min'
     AggMethod <- 'max'
     DefuzzMethod <- 'centroid'
+    mfType <- 't1'
 
     # evaluate the values from the file
     while (all(is.na(charmatch(c('[In', '[Out', '[Rules'), fileText[line])))) {
@@ -552,7 +558,7 @@ readfis <- function(fileName) {
     }
 
     # create a FIS with the given structure
-    fis <- list(name = Name, type = Type,
+    fis <- list(name = Name, type = Type, mfType = mfType,
     andMethod = AndMethod, orMethod = OrMethod,
     impMethod = ImpMethod, aggMethod = AggMethod,
     defuzzMethod = DefuzzMethod,
@@ -563,21 +569,32 @@ readfis <- function(fileName) {
         while (is.na(charmatch('[Input', fileText[line])))
         line <- line + 1
 
+        fuzzification.method <- 'singleton.fuzzification'
+        fuzzification.params <- NULL
+
         # name and range (needs processing)
         eval(parse(text = fileText[line + 1]))
         rangeStr <- fileText[line + 2]
         rangeSplit <- unlist(strsplit(rangeStr, "[][ ]"))
         rangeText <- paste(rangeSplit[1], 'c(', paste(rangeSplit[- 1], collapse = ','), ')')
         eval(parse(text = rangeText))
+        eval(parse(text = fileText[line + 3]))
+        # eval(parse(text = fileText[line + 4]))
+        paramText <- fileText[line + 4]
+        paramText <- unlist(strsplit(paramText, "[=]"))
+        paramText <- unlist(strsplit(paramText[2], "[][ ]"))
+        paramText <- paste('fuzzification.params=', 'c(', paste(paramText[- 1], collapse = ','), ')')
+        eval(parse(text = paramText))
 
         # now add the variable to the FIS
-        fis <- addvar(fis, 'input', Name, Range)
+        fis <- addvar(fis, 'input', Name, Range, fuzzification.method, fuzzification.params)
 
         # number of membership functions
-        eval(parse(text = fileText[line + 3]))
-        line <- line + 4
+        eval(parse(text = fileText[line + 5]))
+        line <- line + 6
 
         for (MFIndex in 1 : NumMFs) {
+            # MF1='very low':'trapmf',[13 13 32 35]
             mfStr <- fileText[line]
             #browser()
             mfSplit <- unlist(strsplit(mfStr, "[',]"))
@@ -676,7 +693,8 @@ showfis <- function(fis) {
     NumRules = nrow(fis$rule)
 
     cat('1.  Name             ', fis$name, '\n')
-    cat('2.  Type             ', fis$type, '\n')
+    cat('2a. Type             ', fis$type, '\n')
+    cat('2b. mfType           ', fis$mfType, '\n')    
     cat('3.  Inputs/Outputs   ', '[', NumInputs, NumOutputs, ']', '\n')
     cat('4.  NumInputMFs      ', '[', NumInputMFs, ']', '\n')
     cat('5.  NumOutputMFs     ', '[', NumOutputMFs, ']', '\n')
@@ -938,7 +956,12 @@ evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
 
         .GlobalEnv$OUT_TEMP_MF <- matrix(0, (.GlobalEnv$OUT_MF_N_sum) * .GlobalEnv$MF_TYPE + .GlobalEnv$MF_TYPE, point_n)
 
-        .GlobalEnv$OUT_TEMP_MF[OUT_COUPLE + 1,] <- 1
+
+        # -- BEGIN, 15 Mar 2020, Chao -- 
+        # -- When AGG_METHOD is 'max', the following line will produce unexpected results. Hence, it is commented out.
+        # .GlobalEnv$OUT_TEMP_MF[OUT_COUPLE + 1,] <- 1
+        # -- END, 15 Mar 2020, Chao -- 
+       
         idx = 1
 
         for (i in 1 : .GlobalEnv$OUT_N) {
@@ -990,6 +1013,13 @@ evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
         idx[RULE_CONS == 0] = 1
 
         .GlobalEnv$OUT_MF <- .GlobalEnv$OUT_TEMP_MF[t(idx),]
+
+        # -- BEGIN, 15 April 2020, Chao -- 
+        # -- This is part of the solution to address the issue when the FIS only has one rule.
+        if(.GlobalEnv$RULE_N == 1) {
+            .GlobalEnv$OUT_MF <- t(.GlobalEnv$OUT_MF)
+        }
+        # -- END, 15 April 2020, Chao -- 
 
         #Now OUT_MF is RULE_N*OUT_N X point_n matrix
         .GlobalEnv$OUT_MF[t(.GlobalEnv$RULE_CONS) < 0,] <- 1 - .GlobalEnv$OUT_MF[t(.GlobalEnv$RULE_CONS < 0),]
@@ -1094,6 +1124,10 @@ evalfis <- function(input_stack, fis, time=1, point_n=101, draw=FALSE) {
 
         # restructure row of in_temp_mf_value to fit in_mf_value
         ind = matrix(1, .GlobalEnv$RULE_N, 1) %*% cumsum(c(0, .GlobalEnv$IN_MF_N[0 : (.GlobalEnv$IN_N - 1)])) + abs(.GlobalEnv$RULE_ANTE)
+        # -- BEGIN 13 Mar 2020, Chao -- 
+        # -- Bug fix (when first input is not used)
+        ind[ind == 0] <- 1
+        # -- END 13 Mar 2020, Chao -- 
         in_mf_value = matrix(in_temp_mf_value[ind,], .GlobalEnv$RULE_N, .GlobalEnv$IN_N)
 
         # replace dont-care MFs in AND rules with 1, and OR rules with 0

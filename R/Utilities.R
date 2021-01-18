@@ -99,7 +99,7 @@ init.params.gbell <- function(x, n=2) {
 
 	x.range <- range(x)
 
-    a <- diff(x.range) / 5
+    a <- diff(x.range) / ((n - 1) * 2)
     if(a == 0) a = 1
     b <- 1
     c <- seq(x.range[1], x.range[2], length.out=n)
@@ -188,7 +188,7 @@ rspe <- function(f, y, ref=0) {
 #' @author Chao Chen
 #' @references
 #' [1] C. Chen, J. Twycross, and J. M. Garibaldi, “A new accuracy measure based on bounded relative error for time series forecasting,” PLOS ONE, vol. 12, no. 3, pp. 1–23, 2017. \cr
-#' \url{http://dx.doi.org/10.1371/journal.pone.0174202}
+#' \doi{10.1371/journal.pone.0174202}
 #' @export
 
 fuzzyr.accuracy <- function(f, y, f.ref=0, scale.mase=NULL) {

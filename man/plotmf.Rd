@@ -4,8 +4,16 @@
 \alias{plotmf}
 \title{Plots a 2D graph of all membership functions in a variable.}
 \usage{
-plotmf(fis, varType, varIndex, xx = NULL, timelimit = 0, xlab = NULL,
-  ylab = NULL, main = NULL)
+plotmf(
+  fis,
+  varType,
+  varIndex,
+  xx = NULL,
+  timelimit = 0,
+  xlab = NULL,
+  ylab = NULL,
+  main = NULL
+)
 }
 \arguments{
 \item{fis}{Requires an existing fis as an argument.}

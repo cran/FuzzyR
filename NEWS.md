@@ -1,5 +1,16 @@
 # *News*
 
+# FuzzyR 2.3.1
+
+<!-- ## New features -->
+
+
+## Bug fixes
+
+* Address the issue of `writefis`, `readfis` and `showfis`.
+* Address the issue when one or more rules do not use the first input variable.
+
+
 # FuzzyR 2.3
 
 ## New features

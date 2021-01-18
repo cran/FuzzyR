@@ -4,9 +4,17 @@
 \alias{fis.builder}
 \title{TSK FIS builder}
 \usage{
-fis.builder(x.range, input.num, input.mf.num, input.mf.type,
-  rule.num = prod(input.mf.num), rule.which = NULL,
-  defuzzMethod = "default", params.ante, params.conse)
+fis.builder(
+  x.range,
+  input.num,
+  input.mf.num,
+  input.mf.type,
+  rule.num = prod(input.mf.num),
+  rule.which = NULL,
+  defuzzMethod = "default",
+  params.ante,
+  params.conse
+)
 }
 \arguments{
 \item{x.range}{a vector/matrix as the range of input(s)}

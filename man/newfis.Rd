@@ -4,9 +4,16 @@
 \alias{newfis}
 \title{Create a fis using newfis function}
 \usage{
-newfis(fisName, fisType = "mamdani", mfType = "t1",
-  andMethod = "min", orMethod = "max", impMethod = "min",
-  aggMethod = "max", defuzzMethod = "centroid")
+newfis(
+  fisName,
+  fisType = "mamdani",
+  mfType = "t1",
+  andMethod = "min",
+  orMethod = "max",
+  impMethod = "min",
+  aggMethod = "max",
+  defuzzMethod = "centroid"
+)
 }
 \arguments{
 \item{fisName}{String representing the fis name.}

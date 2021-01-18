@@ -1,8 +1,8 @@
 Package: FuzzyR
 Type: Package
 Title: Fuzzy Logic Toolkit for R
-Version: 2.3
-Packaged: 2019-11-20 15:15:15 UTC; cc
+Version: 2.3.1
+Packaged: 2021-01-18 18:31:11 UTC; cc
 Author: Chao Chen, Jon Garibaldi, Tajul Razak
 Maintainer: Chao Chen <fuzzyr@cs.nott.ac.uk>
 Depends: R (>= 3.6.0)
@@ -14,9 +14,9 @@ Description: Design and simulate fuzzy logic systems using Type-1 and Interval T
     and Lab for UnCertainty In Data and decision making (LUCID), University of Nottingham.
 License: GPL (>= 2)
 LazyData: TRUE
-URL: http://www.lucidresearch.org
-RoxygenNote: 6.1.1
+URL: https://www.lucidresearch.org/
+RoxygenNote: 7.1.1
 NeedsCompilation: no
 Encoding: UTF-8
 Repository: CRAN
-Date/Publication: 2019-11-20 21:30:17 UTC
+Date/Publication: 2021-01-18 19:20:02 UTC

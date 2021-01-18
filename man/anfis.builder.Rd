@@ -21,10 +21,10 @@ anfis <- anfis.builder(fis)
 }
 \references{
 [1] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models,” in Proceedings IEEE International Conference on Fuzzy Systems, 2016, pp. 602–609. \cr
-\url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
+\doi{10.1109/FUZZ-IEEE.2016.7737742}
 
 [2] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “Type-1 and interval type-2 ANFIS: a comparison,” in Proceedings IEEE International Conference on Fuzzy Systems, 2017, pp. 1–6.  \cr
-\url{https://doi.org/10.1109/FUZZ-IEEE.2017.8015555}
+\doi{10.1109/FUZZ-IEEE.2017.8015555}
 }
 \author{
 Chao Chen

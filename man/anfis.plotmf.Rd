@@ -4,8 +4,16 @@
 \alias{anfis.plotmf}
 \title{Plot membership functions for an ANFIS object}
 \usage{
-anfis.plotmf(anfis, varType, varIndex, xx = NULL, timelimit = 0,
-  xlab = NULL, ylab = NULL, main = NULL)
+anfis.plotmf(
+  anfis,
+  varType,
+  varIndex,
+  xx = NULL,
+  timelimit = 0,
+  xlab = NULL,
+  ylab = NULL,
+  main = NULL
+)
 }
 \arguments{
 \item{anfis}{Requires an existing anfis as an argument.}

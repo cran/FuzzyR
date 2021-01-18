@@ -38,10 +38,10 @@ km.da(wl, wr, f)
 }
 \references{
 [1] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “A Direct Approach for Determining the Switch Points in the Karnik–Mendel Algorithm,” IEEE Transactions on Fuzzy Systems, vol. 26, no. 2, pp. 1079–1085, Apr. 2018. \cr
-\url{https://doi.org/10.1109/TFUZZ.2017.2699168}
+\doi{10.1109/TFUZZ.2017.2699168}
 
 [2] C. Chen, D. Wu, J. M. Garibaldi, R. John, J. Twycross, and J. M. Mendel, “A Comment on ‘A Direct Approach for Determining the Switch Points in the Karnik-Mendel Algorithm,’” IEEE Transactions on Fuzzy Systems, vol. 26, no. 6, pp. 3905–3907, 2018. \cr
-\url{https://doi.org/10.1109/TFUZZ.2018.2865134}
+\doi{10.1109/TFUZZ.2018.2865134}
 }
 \author{
 Chao Chen

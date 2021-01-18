@@ -20,8 +20,8 @@ Adds a rule to a fis object.
 \details{
 For example, if one has a fis with 2 input variables, and 1 output variable, each of which have 3 membership functions (the amount of membership functions need not be the same). The following rule: 1 3 2 1 2 will mean m = 2 (for 2 input variables), n = 1 (for 1 output variable), and the last 2 columns represent weight and fuzzy operator for the rule's antecedent respectively. \cr\cr
 The first column refers to the first input variable's membership function at index 1.\cr\cr
-The second column refers to the second input variable's membership function at index 2.\cr\cr
-The third column refers to the first output variable's membership function at index 3.\cr\cr
+The second column refers to the second input variable's membership function at index 3.\cr\cr
+The third column refers to the first output variable's membership function at index 2.\cr\cr
 The fourth column refers to the weight to be applied to the rule.\cr\cr
 The fifth column refers to the fuzzy operator for the rule's antecedent (in this case it represents 'OR').
 }

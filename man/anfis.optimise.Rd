@@ -4,10 +4,21 @@
 \alias{anfis.optimise}
 \title{ANFIS optimiser}
 \usage{
-anfis.optimise(anfis, data.trn, data.chk = NULL, epoch.total = 100,
-  stepsize = 0.1, rate.inc = 1.1, rate.dec = 0.9,
-  method = c("gradient", "lse"), err.log = F, online = 0,
-  lambda = 1, opt.by = "err.opt", err.trn.fix = T)
+anfis.optimise(
+  anfis,
+  data.trn,
+  data.chk = NULL,
+  epoch.total = 100,
+  stepsize = 0.1,
+  rate.inc = 1.1,
+  rate.dec = 0.9,
+  method = c("gradient", "lse"),
+  err.log = F,
+  online = 0,
+  lambda = 1,
+  opt.by = "err.opt",
+  err.trn.fix = T
+)
 }
 \arguments{
 \item{anfis}{The given ANFIS model}
@@ -56,10 +67,10 @@ anfis.final <- anfis.optimise(anfis, data.trn, epoch.total=500,
 }
 \references{
 [1] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “An extended ANFIS architecture and its learning properties for type-1 and interval type-2 models,” in Proceedings IEEE International Conference on Fuzzy Systems, 2016, pp. 602–609. \cr
-\url{https://doi.org/10.1109/FUZZ-IEEE.2016.7737742}
+\doi{10.1109/FUZZ-IEEE.2016.7737742}
 
 [2] C. Chen, R. John, J. Twycross, and J. M. Garibaldi, “Type-1 and interval type-2 ANFIS: a comparison,” in Proceedings IEEE International Conference on Fuzzy Systems, 2017, pp. 1–6.  \cr
-\url{https://doi.org/10.1109/FUZZ-IEEE.2017.8015555}
+\doi{10.1109/FUZZ-IEEE.2017.8015555}
 }
 \author{
 Chao Chen

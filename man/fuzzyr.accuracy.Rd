@@ -28,7 +28,7 @@ fuzzyr.accuracy(f, y)
 }
 \references{
 [1] C. Chen, J. Twycross, and J. M. Garibaldi, “A new accuracy measure based on bounded relative error for time series forecasting,” PLOS ONE, vol. 12, no. 3, pp. 1–23, 2017. \cr
-\url{http://dx.doi.org/10.1371/journal.pone.0174202}
+\doi{10.1371/journal.pone.0174202}
 }
 \author{
 Chao Chen
