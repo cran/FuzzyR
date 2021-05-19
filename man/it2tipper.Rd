@@ -7,7 +7,7 @@
 it2tipper()
 }
 \value{
-A fis is return
+A fis object
 }
 \description{
 A function used primarily for example purposes, it creates a it2 fis with two input (service & food), output variables (tip) and their membership functions.

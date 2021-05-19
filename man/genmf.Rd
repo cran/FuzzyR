@@ -21,7 +21,7 @@ according to type and parameters
 }
 \details{
 Built-in membership function types are: 'gbellmf', 'it2gbellmf', 'singletonmf', 'linearmf', 'gaussmf', 'trapmf', 'trimf'.
-\cr \cr mf.params for 
+\cr \cr mf.params for
 \itemize{
 \item 'gbellmf' is c(\code{a, b, c}), where \code{a} denotes the width, \code{b} is usually positive and {c} locates the center of the curve.
 \cr \item 'it2gbellmf' is c(\code{a.lower, a.upper, b, c}), where \code{a.upper > a.lower} when \code{b > 0} and \code{a.upper < a.lower} when \code{b < 0}

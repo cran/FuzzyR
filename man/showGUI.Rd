@@ -4,10 +4,12 @@
 \alias{showGUI}
 \title{Show a Graphic User Interface of fis object}
 \usage{
-showGUI(fis)
+showGUI(fis, advancedGUI = FALSE)
 }
 \arguments{
 \item{fis}{Requires a fis structure to display a GUI.}
+
+\item{advancedGUI}{TRUE/FALSE; if TRUE, an advanced GUI with more features is provided (provided by science@sboldt.com).}
 }
 \value{
 Return the GUI to display membership function for input and output together with rules.

@@ -1,5 +1,12 @@
 # *News*
 
+# FuzzyR 2.3.2
+
+## New features
+
+* Add non-singleton features described in the FuzzIEEE paper 'An Extension of the FuzzyR Toolbox for Non-Singleton Fuzzy Logic Systems'. This is a collaborative work with Yu Zhao. 
+* Refactoring code for function showGUI; Add advanced GUI features. Many thanks to the contribution from science@sboldt.com.
+
 # FuzzyR 2.3.1
 
 <!-- ## New features -->

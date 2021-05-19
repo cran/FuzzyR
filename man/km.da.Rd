@@ -22,8 +22,8 @@ km.da(wl, wr, f, maximum = F, w.which = F, sorted = F, k.which = F)
 \item{k.which}{T, to show the index of the switch point selected by the algorithm.}
 }
 \value{
-w.which=T, a two-column matrix indicating which membership grades to be used; 
-w.which=F and k.which=T, a vector of the centroid and the switch point; 
+w.which=T, a two-column matrix indicating which membership grades to be used;
+w.which=F and k.which=T, a vector of the centroid and the switch point;
 w.which=F and k.which=F, a single value of the centroid.
 }
 \description{

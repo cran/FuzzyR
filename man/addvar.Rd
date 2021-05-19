@@ -4,7 +4,15 @@
 \alias{addvar}
 \title{Insert a variable}
 \usage{
-addvar(fis, varType, varName, varBounds, method = NULL, params = NULL)
+addvar(
+  fis,
+  varType,
+  varName,
+  varBounds,
+  method = NULL,
+  params = NULL,
+  firing.method = "tnorm.min.max"
+)
 }
 \arguments{
 \item{fis}{A fis must be provided.}
@@ -15,10 +23,23 @@ addvar(fis, varType, varName, varBounds, method = NULL, params = NULL)
 
 \item{varBounds}{Also known as the 'range', this should be a vector giving a range for the variable, such as 1:10.}
 
-\item{method}{fuzzification or defuzzification method}
+\item{method}{fuzzification or defuzzification method.
+\itemize{
+\item fuzzification: 'gauss', 'gbell', 'tri', or user-defined.
+\item defuzzification: 'centroid', 'cos', 'coh', 'csum' or user-defined.
+}}
 
 \item{params}{the required parameters for the corresponding fuzzification or defuzzification method.
 For example, the required parameters for \code{\link{gbell.fuzzification}} are c(a,b)}
+
+\item{firing.method}{the chosen method for getting the firing strength (for non-singleton fuzzification).
+\itemize{
+\item 'tnorm.min.max' - minimum t-norm with maximum membership grade as the firing strength
+\item 'tnorm.prod.max' - product t-norm with maximum membership grade as the firing strength
+\item 'tnorm.min.defuzz.[method]' - the firing strength is based on minimum t-norm, and the chosen defuzzification method (e.g. tnorm.min.defuzz.centroid)
+\item 'tnorm.prod.defuzz.[method] - the firing strength is based on product t-norm, and the chosen defuzzification method (e.g. tnorm.prod.defuzz.bisector)
+\item 'similarity.set' - Set-theoretic similarity: the ratio between the intersection and the union of two fuzzy sets
+}}
 }
 \value{
 A fis with the new variable added.
@@ -29,4 +50,5 @@ Adds an input or output variable to a fis object.
 \examples{
 fis <- newfis('tipper')
 fis <- addvar(fis, 'input', 'service', c(0, 10))
+fis <- addvar(fis, 'input', 'service', c(0, 10), 'gauss', 0.5, 'tnorm.min.max')
 }
